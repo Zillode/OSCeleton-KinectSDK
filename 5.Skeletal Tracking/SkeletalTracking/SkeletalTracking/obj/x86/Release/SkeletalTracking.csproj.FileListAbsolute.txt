@@ -1,0 +1,54 @@
+C:\Users\danielfe\Desktop\Kinect\Quickstarts\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\bin\Release\SkeletalTracking.exe
+C:\Users\danielfe\Desktop\Kinect\Quickstarts\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\bin\Release\SkeletalTracking.pdb
+C:\Users\danielfe\Desktop\Kinect\Quickstarts\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\bin\Release\Coding4Fun.Kinect.Wpf.dll
+C:\Users\danielfe\Desktop\Kinect\Quickstarts\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\bin\Release\Microsoft.Samples.Kinect.WpfViewers.dll
+C:\Users\danielfe\Desktop\Kinect\Quickstarts\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\bin\Release\Microsoft.Expression.Drawing.dll
+C:\Users\danielfe\Desktop\Kinect\Quickstarts\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\bin\Release\Microsoft.Samples.Kinect.WpfViewers.pdb
+C:\Users\danielfe\Desktop\Kinect\Quickstarts\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\bin\Release\Coding4Fun.Kinect.Wpf.pdb
+C:\Users\danielfe\Desktop\Kinect\Quickstarts\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\obj\x86\Release\ResolveAssemblyReference.cache
+C:\Users\danielfe\Desktop\Kinect\Quickstarts\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\obj\x86\Release\MainWindow.baml
+C:\Users\danielfe\Desktop\Kinect\Quickstarts\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\obj\x86\Release\MainWindow.g.cs
+C:\Users\danielfe\Desktop\Kinect\Quickstarts\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\obj\x86\Release\App.g.cs
+C:\Users\danielfe\Desktop\Kinect\Quickstarts\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\obj\x86\Release\SkeletalTracking_MarkupCompile.cache
+C:\Users\danielfe\Desktop\Kinect\Quickstarts\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\obj\x86\Release\SkeletalTracking.g.resources
+C:\Users\danielfe\Desktop\Kinect\Quickstarts\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\obj\x86\Release\SkeletalTracking.Properties.Resources.resources
+C:\Users\danielfe\Desktop\Kinect\Quickstarts\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\obj\x86\Release\GenerateResource.read.1.tlog
+C:\Users\danielfe\Desktop\Kinect\Quickstarts\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\obj\x86\Release\GenerateResource.write.1.tlog
+C:\Users\danielfe\Desktop\Kinect\Quickstarts\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\obj\x86\Release\SkeletalTracking.exe
+C:\Users\danielfe\Desktop\Kinect\Quickstarts\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\obj\x86\Release\SkeletalTracking.pdb
+C:\Users\danielfe\Desktop\Work Files\Projects\KinectSDK\v1Quickstarts\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\bin\Release\SkeletalTracking.exe
+C:\Users\danielfe\Desktop\Work Files\Projects\KinectSDK\v1Quickstarts\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\bin\Release\SkeletalTracking.pdb
+C:\Users\danielfe\Desktop\Work Files\Projects\KinectSDK\v1Quickstarts\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\bin\Release\Coding4Fun.Kinect.Wpf.dll
+C:\Users\danielfe\Desktop\Work Files\Projects\KinectSDK\v1Quickstarts\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\bin\Release\Microsoft.Samples.Kinect.WpfViewers.dll
+C:\Users\danielfe\Desktop\Work Files\Projects\KinectSDK\v1Quickstarts\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\bin\Release\Microsoft.Expression.Drawing.dll
+C:\Users\danielfe\Desktop\Work Files\Projects\KinectSDK\v1Quickstarts\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\bin\Release\Microsoft.Samples.Kinect.WpfViewers.pdb
+C:\Users\danielfe\Desktop\Work Files\Projects\KinectSDK\v1Quickstarts\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\bin\Release\Coding4Fun.Kinect.Wpf.pdb
+C:\Users\danielfe\Desktop\Work Files\Projects\KinectSDK\v1Quickstarts\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\obj\x86\Release\ResolveAssemblyReference.cache
+C:\Users\danielfe\Desktop\Work Files\Projects\KinectSDK\v1Quickstarts\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\obj\x86\Release\MainWindow.baml
+C:\Users\danielfe\Desktop\Work Files\Projects\KinectSDK\v1Quickstarts\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\obj\x86\Release\MainWindow.g.cs
+C:\Users\danielfe\Desktop\Work Files\Projects\KinectSDK\v1Quickstarts\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\obj\x86\Release\App.g.cs
+C:\Users\danielfe\Desktop\Work Files\Projects\KinectSDK\v1Quickstarts\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\obj\x86\Release\SkeletalTracking_MarkupCompile.cache
+C:\Users\danielfe\Desktop\Work Files\Projects\KinectSDK\v1Quickstarts\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\obj\x86\Release\SkeletalTracking.g.resources
+C:\Users\danielfe\Desktop\Work Files\Projects\KinectSDK\v1Quickstarts\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\obj\x86\Release\SkeletalTracking.Properties.Resources.resources
+C:\Users\danielfe\Desktop\Work Files\Projects\KinectSDK\v1Quickstarts\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\obj\x86\Release\GenerateResource.read.1.tlog
+C:\Users\danielfe\Desktop\Work Files\Projects\KinectSDK\v1Quickstarts\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\obj\x86\Release\GenerateResource.write.1.tlog
+C:\Users\danielfe\Desktop\Work Files\Projects\KinectSDK\v1Quickstarts\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\obj\x86\Release\SkeletalTracking.exe
+C:\Users\danielfe\Desktop\Work Files\Projects\KinectSDK\v1Quickstarts\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\obj\x86\Release\SkeletalTracking.pdb
+C:\Users\danielfe\Desktop\v1\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\obj\x86\Release\SkeletalTracking.exe
+C:\Users\danielfe\Desktop\v1\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\obj\x86\Release\SkeletalTracking.pdb
+C:\Users\danielfe\Desktop\v1\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\bin\Release\SkeletalTracking.exe
+C:\Users\danielfe\Desktop\v1\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\bin\Release\SkeletalTracking.pdb
+C:\Users\danielfe\Desktop\v1\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\bin\Release\Coding4Fun.Kinect.Wpf.dll
+C:\Users\danielfe\Desktop\v1\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\bin\Release\Microsoft.Samples.Kinect.WpfViewers.dll
+C:\Users\danielfe\Desktop\v1\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\bin\Release\Microsoft.Expression.Drawing.dll
+C:\Users\danielfe\Desktop\v1\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\bin\Release\Microsoft.Samples.Kinect.WpfViewers.pdb
+C:\Users\danielfe\Desktop\v1\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\bin\Release\Coding4Fun.Kinect.Wpf.pdb
+C:\Users\danielfe\Desktop\v1\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\obj\x86\Release\ResolveAssemblyReference.cache
+C:\Users\danielfe\Desktop\v1\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\obj\x86\Release\MainWindow.baml
+C:\Users\danielfe\Desktop\v1\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\obj\x86\Release\MainWindow.g.cs
+C:\Users\danielfe\Desktop\v1\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\obj\x86\Release\App.g.cs
+C:\Users\danielfe\Desktop\v1\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\obj\x86\Release\SkeletalTracking_MarkupCompile.cache
+C:\Users\danielfe\Desktop\v1\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\obj\x86\Release\SkeletalTracking.g.resources
+C:\Users\danielfe\Desktop\v1\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\obj\x86\Release\SkeletalTracking.Properties.Resources.resources
+C:\Users\danielfe\Desktop\v1\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\obj\x86\Release\GenerateResource.read.1.tlog
+C:\Users\danielfe\Desktop\v1\KinectforWindowsSDKV1\5.Skeletal Tracking\SkeletalTracking\SkeletalTracking\obj\x86\Release\GenerateResource.write.1.tlog
