@@ -19,11 +19,14 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Microsoft.Kinect;
 using Coding4Fun.Kinect.Wpf;
+using System.IO; 
 //speech
 using Microsoft.Speech.AudioFormat;
 using Microsoft.Speech.Recognition;
 //OSC
 using Ventuz.OSC;
+using System.Diagnostics;
+
 
 namespace SkeletalTracking
 {
@@ -45,9 +48,22 @@ namespace SkeletalTracking
         private KinectSensor sensor;
         private DispatcherTimer readyTimer;
         private UdpWriter osc;
+        private StreamWriter sw;
+        private Stopwatch stopwatch;
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            this.osc = new UdpWriter("127.0.0.1", 7110);
+            //test: send 4 points
+            osc.Send(new OscElement("/joint", "r_hand", 0, 0, 0, 1000));
+            osc.Send(new OscElement("/joint", "r_hand", 0, -350, -400, 1500));
+            osc.Send(new OscElement("/joint", "r_hand", 0, -350, 0, 2000));
+            osc.Send(new OscElement("/joint", "r_hand", 0, 0, -400, 2500));
+            //create csv file
+            stopwatch = new Stopwatch();
+            stopwatch.Start();
+            sw = new StreamWriter("points.csv", true);
+            sw.WriteLine("Joint, type, id, x, y, on");
             kinectSensorChooser1.KinectSensorChanged += new DependencyPropertyChangedEventHandler(kinectSensorChooser1_KinectSensorChanged);
             //this.kinectColorViewer1.Visibility = System.Windows.Visibility.Hidden;
 
@@ -67,8 +83,8 @@ namespace SkeletalTracking
                 return;
             }
 
-            //this.osc = new UdpWriter("127.0.0.1", 7110);
-            this.osc = new UdpWriter("192.168.6.144", 7110);
+            this.osc = new UdpWriter("127.0.0.1", 7110);
+            //this.osc = new UdpWriter("192.168.6.144", 7110);
 
             var parameters = new TransformSmoothParameters
             {
@@ -199,9 +215,34 @@ namespace SkeletalTracking
                     SkeletonPoint HandLeft = first.Joints[JointType.HandLeft].Position;
                     SkeletonPoint HandRight = first.Joints[JointType.HandRight].Position;
                     //osc.Send(new OscElement("/joint", "l_shoulder", 0, 1000 * ShoulderLeft.X, -1000 * ShoulderLeft.Y, 1000 * ShoulderLeft.Z));
-                    osc.Send(new OscElement("/joint", "r_shoulder", 0, 1000 * ShoulderRight.X, -1000 * ShoulderRight.Y, 1000 * ShoulderRight.Z));
-                    osc.Send(new OscElement("/joint", "r_hand", 0, 1000 * HandRight.X, -1000 * HandRight.Y, 1000 * HandRight.Z));
+                    //osc.Send(new OscElement("/joint", "r_shoulder", 0, 1000 * ShoulderRight.X, -1000 * ShoulderRight.Y, 1000 * ShoulderRight.Z));
+                    osc.Send(new OscElement("/joint", "r_hand", 0, 1000 * HandRight.X, 1000 * HandRight.Y, 1000 * HandRight.Z));
+
+                    sw.WriteLine("r_hand, 0, " + 1000 * HandRight.X + ", " + 1000 * HandRight.Y + ", " + stopwatch.ElapsedMilliseconds);
                     //osc.Send(new OscElement("/joint", "l_hand", 0, 1000 * HandLeft.X, -1000 * HandLeft.Y, 1000 * HandLeft.Z));
+                    Status.Foreground = Brushes.Black;
+                    /*osc.Send(new OscElement("/joint", "r_hand", 0, 350, 200, 300));
+                    osc.Send(new OscElement("/joint", "r_hand", 0, 0, -200, 300));
+                    osc.Send(new OscElement("/joint", "r_hand", 0, 0, 200, 300));
+                    osc.Send(new OscElement("/joint", "r_hand", 0, 350, -200, 300));*/
+                    if (Distance2D(1000 * HandRight.X, 1000 * HandRight.Y, 0, 0) < 150)
+                    {
+                        Status.Content = 1;
+                    }
+                    else if (Distance2D(1000 * HandRight.X, 1000 * HandRight.Y, -350, -400) < 150)
+                    {
+                        Status.Content = 2;
+                    }
+                    else if (Distance2D(1000 * HandRight.X, 1000 * HandRight.Y, -350, 0) < 150)
+                    {
+                        Status.Content = 3;
+                    }
+                    else if (Distance2D(1000 * HandRight.X, 1000 * HandRight.Y, 0, -400) < 150)
+                    {
+                        Status.Content = 4;
+                    }
+                    else { Status.Content = 0; }
+                    //Status.Content = (int)(1000 * HandRight.X) + "/" + (int)(-1000 * HandRight.Y);
                 }
 
                 //Set location
@@ -209,6 +250,26 @@ namespace SkeletalTracking
                 CameraPosition(leftEllipse, leftColorPoint);
                 CameraPosition(rightEllipse, rightColorPoint);
             }        
+        }
+
+        private int Distance2D(double x1, double y1, int x2, int y2)
+        {
+            //     ______________________
+            //d = &#8730; (x2-x1)^2 + (y2-y1)^2
+            //
+
+            //Our end result
+            int result = 0;
+            //Take x2-x1, then square it
+            double part1 = Math.Pow((x2 - x1), 2);
+            //Take y2-y1, then sqaure it
+            double part2 = Math.Pow((y2 - y1), 2);
+            //Add both of the parts together
+            double underRadical = part1 + part2;
+            //Get the square root of the parts
+            result = (int)Math.Sqrt(underRadical);
+            //Return our result
+            return result;
         }
 
 
@@ -390,7 +451,9 @@ Ensure you have the Microsoft Speech SDK installed and configured.",
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             closing = true; 
-            StopKinect(kinectSensorChooser1.Kinect); 
+            StopKinect(kinectSensorChooser1.Kinect);
+            sw.Close();
+            stopwatch.Stop();
         }
     }
 }
