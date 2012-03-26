@@ -55,15 +55,16 @@ namespace SkeletalTracking
         {
             this.osc = new UdpWriter("127.0.0.1", 7110);
             //test: send 4 points
-            osc.Send(new OscElement("/joint", "r_hand", 0, 0, 0, 1000));
-            osc.Send(new OscElement("/joint", "r_hand", 0, -350, -400, 1500));
-            osc.Send(new OscElement("/joint", "r_hand", 0, -350, 0, 2000));
-            osc.Send(new OscElement("/joint", "r_hand", 0, 0, -400, 2500));
+            //osc.Send(new OscElement("/joint", "r_hand", 0, 0, 0, 1000));
+            //osc.Send(new OscElement("/joint", "r_hand", 0, -350, -400, 1500));
+            //osc.Send(new OscElement("/joint", "r_hand", 0, -350, 0, 2000));
+            //osc.Send(new OscElement("/joint", "r_hand", 0, 0, -400, 2500));
             //create csv file
             stopwatch = new Stopwatch();
+            stopwatch.Reset();
             stopwatch.Start();
-            sw = new StreamWriter("points.csv", true);
-            sw.WriteLine("Joint, type, id, x, y, on");
+            //sw = new StreamWriter("points.csv", true);
+            //sw.WriteLine("Joint, joint, user, x, y, on");
             kinectSensorChooser1.KinectSensorChanged += new DependencyPropertyChangedEventHandler(kinectSensorChooser1_KinectSensorChanged);
             //this.kinectColorViewer1.Visibility = System.Windows.Visibility.Hidden;
 
@@ -98,9 +99,10 @@ namespace SkeletalTracking
 
             sensor.SkeletonStream.Enable();
 
-            sensor.AllFramesReady += new EventHandler<AllFramesReadyEventArgs>(sensor_AllFramesReady);
-            sensor.DepthStream.Enable(DepthImageFormat.Resolution640x480Fps30); 
-            sensor.ColorStream.Enable(ColorImageFormat.RgbResolution640x480Fps30);
+            //sensor.AllFramesReady += new EventHandler<AllFramesReadyEventArgs>(sensor_AllFramesReady);
+            //sensor.DepthStream.Enable(DepthImageFormat.Resolution640x480Fps30); 
+            //sensor.ColorStream.Enable(ColorImageFormat.RgbResolution640x480Fps30);
+            sensor.SkeletonFrameReady += new EventHandler<SkeletonFrameReadyEventArgs>(sensor_SkeletonFrameReady);
 
             this.speechRecognizer = this.CreateSpeechRecognizer();
 
@@ -143,7 +145,70 @@ namespace SkeletalTracking
             this.readyTimer = null;
         }
 
+        void sensor_SkeletonFrameReady(object sender, SkeletonFrameReadyEventArgs e)
+        {
+
+            SkeletonFrame skeletonFrame = e.OpenSkeletonFrame();
+            if (skeletonFrame == null) return;
+            skeletonFrame.CopySkeletonDataTo(allSkeletons);
+
+
+            //SkeletonFrame allSkeletons = e.OpenSkeletonFrame();
+            var first = (from s in allSkeletons
+                                where s.TrackingState == SkeletonTrackingState.Tracked
+                                select s).FirstOrDefault();
+            if (first == null) return;
+                SkeletonPoint ShoulderLeft = first.Joints[JointType.ShoulderLeft].Position;
+                SkeletonPoint ShoulderRight = first.Joints[JointType.ShoulderRight].Position;
+                SkeletonPoint HandLeft = first.Joints[JointType.HandLeft].Position;
+                SkeletonPoint HandRight = first.Joints[JointType.HandRight].Position;
+                if (Distance2D(1000 * HandRight.X, 1000 * HandRight.Y, 0, 0) < 150)
+                {
+                    Status.Content = 1;
+                }
+                else if (Distance2D(1000 * HandRight.X, 1000 * HandRight.Y, -350, -400) < 150)
+                {
+                    Status.Content = 2;
+                }
+                else if (Distance2D(1000 * HandRight.X, 1000 * HandRight.Y, -350, 0) < 150)
+                {
+                    Status.Content = 3;
+                }
+                else if (Distance2D(1000 * HandRight.X, 1000 * HandRight.Y, 0, -400) < 150)
+                {
+                    Status.Content = 4;
+                }
+                else { Status.Content = 0; }
+                //zet hier osc
+                if (running == true)
+                {
+                    //osc.Send(new OscElement("/joint", "l_shoulder", 0, 1000 * ShoulderLeft.X, 1000 * ShoulderLeft.Y, 1000 * ShoulderLeft.Z));
+                    //osc.Send(new OscElement("/joint", "r_shoulder", 0, 1000 * ShoulderRight.X, 1000 * ShoulderRight.Y, 1000 * ShoulderRight.Z));
+                    osc.Send(new OscElement("/joint", "r_hand", 0, 1000 * HandRight.X, 1000 * HandRight.Y, 1000 * HandRight.Z));
+
+                    //sw.WriteLine("Joint, 15, 0, " + 1000 * HandRight.X + ", " + 1000 * HandRight.Y + ", " + stopwatch.ElapsedMilliseconds);
+                    //osc.Send(new OscElement("/joint", "l_hand", 0, 1000 * HandLeft.X, 1000 * HandLeft.Y, 1000 * HandLeft.Z));
+                    Status.Foreground = Brushes.Black;
+                    /*osc.Send(new OscElement("/joint", "r_hand", 0, 350, 200, 300));
+                    osc.Send(new OscElement("/joint", "r_hand", 0, 0, -200, 300));
+                    osc.Send(new OscElement("/joint", "r_hand", 0, 0, 200, 300));
+                    osc.Send(new OscElement("/joint", "r_hand", 0, 350, -200, 300));*/
+                    //Status.Content = (int)(1000 * HandRight.X) + "/" + (int)(-1000 * HandRight.Y);
+                }
+
+                //Set location
+                ScalePosition(leftEllipse, first.Joints[JointType.HandLeft]);
+                ScalePosition(rightEllipse, first.Joints[JointType.HandRight]);
+                //CameraPosition(headImage, headColorPoint);
+                //CameraPosition(leftEllipse, leftColorPoint);
+                //CameraPosition(rightEllipse, rightColorPoint);
+            
+
+
+        }
+
         void sensor_AllFramesReady(object sender, AllFramesReadyEventArgs e)
+        //void sensor_SkeletonFrameReady(object sender, SkeletonFrameReadyEventArgs e)
         {
             if (closing)
             {
@@ -207,41 +272,41 @@ namespace SkeletalTracking
                     depth.MapToColorImagePoint(rightDepthPoint.X, rightDepthPoint.Y,
                     ColorImageFormat.RgbResolution640x480Fps30);
 
+                SkeletonPoint ShoulderLeft = first.Joints[JointType.ShoulderLeft].Position;
+                SkeletonPoint ShoulderRight = first.Joints[JointType.ShoulderRight].Position;
+                SkeletonPoint HandLeft = first.Joints[JointType.HandLeft].Position;
+                SkeletonPoint HandRight = first.Joints[JointType.HandRight].Position;
+                if (Distance2D(1000 * HandRight.X, 1000 * HandRight.Y, 0, 0) < 150)
+                {
+                    Status.Content = 1;
+                }
+                else if (Distance2D(1000 * HandRight.X, 1000 * HandRight.Y, -350, -400) < 150)
+                {
+                    Status.Content = 2;
+                }
+                else if (Distance2D(1000 * HandRight.X, 1000 * HandRight.Y, -350, 0) < 150)
+                {
+                    Status.Content = 3;
+                }
+                else if (Distance2D(1000 * HandRight.X, 1000 * HandRight.Y, 0, -400) < 150)
+                {
+                    Status.Content = 4;
+                }
+                else { Status.Content = 0; }
                 //zet hier osc
                 if (running == true)
                 {
-                    SkeletonPoint ShoulderLeft = first.Joints[JointType.ShoulderLeft].Position;
-                    SkeletonPoint ShoulderRight = first.Joints[JointType.ShoulderRight].Position;
-                    SkeletonPoint HandLeft = first.Joints[JointType.HandLeft].Position;
-                    SkeletonPoint HandRight = first.Joints[JointType.HandRight].Position;
-                    //osc.Send(new OscElement("/joint", "l_shoulder", 0, 1000 * ShoulderLeft.X, -1000 * ShoulderLeft.Y, 1000 * ShoulderLeft.Z));
-                    //osc.Send(new OscElement("/joint", "r_shoulder", 0, 1000 * ShoulderRight.X, -1000 * ShoulderRight.Y, 1000 * ShoulderRight.Z));
+                    //osc.Send(new OscElement("/joint", "l_shoulder", 0, 1000 * ShoulderLeft.X, 1000 * ShoulderLeft.Y, 1000 * ShoulderLeft.Z));
+                    //osc.Send(new OscElement("/joint", "r_shoulder", 0, 1000 * ShoulderRight.X, 1000 * ShoulderRight.Y, 1000 * ShoulderRight.Z));
                     osc.Send(new OscElement("/joint", "r_hand", 0, 1000 * HandRight.X, 1000 * HandRight.Y, 1000 * HandRight.Z));
 
-                    sw.WriteLine("r_hand, 0, " + 1000 * HandRight.X + ", " + 1000 * HandRight.Y + ", " + stopwatch.ElapsedMilliseconds);
-                    //osc.Send(new OscElement("/joint", "l_hand", 0, 1000 * HandLeft.X, -1000 * HandLeft.Y, 1000 * HandLeft.Z));
+                    //sw.WriteLine("Joint, 15, 0, " + 1000 * HandRight.X + ", " + 1000 * HandRight.Y + ", " + stopwatch.ElapsedMilliseconds);
+                    //osc.Send(new OscElement("/joint", "l_hand", 0, 1000 * HandLeft.X, 1000 * HandLeft.Y, 1000 * HandLeft.Z));
                     Status.Foreground = Brushes.Black;
                     /*osc.Send(new OscElement("/joint", "r_hand", 0, 350, 200, 300));
                     osc.Send(new OscElement("/joint", "r_hand", 0, 0, -200, 300));
                     osc.Send(new OscElement("/joint", "r_hand", 0, 0, 200, 300));
                     osc.Send(new OscElement("/joint", "r_hand", 0, 350, -200, 300));*/
-                    if (Distance2D(1000 * HandRight.X, 1000 * HandRight.Y, 0, 0) < 150)
-                    {
-                        Status.Content = 1;
-                    }
-                    else if (Distance2D(1000 * HandRight.X, 1000 * HandRight.Y, -350, -400) < 150)
-                    {
-                        Status.Content = 2;
-                    }
-                    else if (Distance2D(1000 * HandRight.X, 1000 * HandRight.Y, -350, 0) < 150)
-                    {
-                        Status.Content = 3;
-                    }
-                    else if (Distance2D(1000 * HandRight.X, 1000 * HandRight.Y, 0, -400) < 150)
-                    {
-                        Status.Content = 4;
-                    }
-                    else { Status.Content = 0; }
                     //Status.Content = (int)(1000 * HandRight.X) + "/" + (int)(-1000 * HandRight.Y);
                 }
 
@@ -289,6 +354,9 @@ namespace SkeletalTracking
                 Skeleton first = (from s in allSkeletons
                                          where s.TrackingState == SkeletonTrackingState.Tracked
                                          select s).FirstOrDefault();
+
+                ScalePosition(leftEllipse, first.Joints[JointType.HandLeft]);
+                ScalePosition(rightEllipse, first.Joints[JointType.HandRight]);
 
                 return first;
 
@@ -383,6 +451,9 @@ Ensure you have the Microsoft Speech SDK installed and configured.",
             var grammar = new Choices();
             grammar.Add("start");
             grammar.Add("stop");
+            grammar.Add("green");
+            grammar.Add("camera on");
+            grammar.Add("camera off"); 
 
             var gb = new GrammarBuilder { Culture = ri.Culture };
             gb.Append(grammar);
@@ -393,6 +464,7 @@ Ensure you have the Microsoft Speech SDK installed and configured.",
             speechRecognizer.LoadGrammar(g);
             speechRecognizer.SpeechRecognized += this.SreSpeechRecognized;
             speechRecognizer.SpeechRecognitionRejected += this.SreSpeechRecognitionRejected;
+            speechRecognizer.SpeechHypothesized += this.SreSpeechHypothesized;
 
             return speechRecognizer;
         }
@@ -408,6 +480,12 @@ Ensure you have the Microsoft Speech SDK installed and configured.",
             this.speechRecognizer.RecognizeAsync(RecognizeMode.Multiple);
             //var t = new Thread(this.PollSoundSourceLocalization);
             //t.Start();
+        }
+
+        private void SreSpeechHypothesized(object sender, SpeechHypothesizedEventArgs e)
+        {
+            Status.Foreground = Brushes.Black;
+            Status.Content = "H: " + e.Result.Text;
         }
 
         private void SreSpeechRecognitionRejected(object sender, SpeechRecognitionRejectedEventArgs e)
@@ -426,19 +504,33 @@ Ensure you have the Microsoft Speech SDK installed and configured.",
                 return;
             }
 
-            switch (e.Result.Text)
+            switch (e.Result.Text.ToUpperInvariant())
             {
-                case "start":
+                case "START":
                     //brush = this.redBrush;
                     Status.Foreground = Brushes.Green;
                     Status.Content = "START";
                     running = true;
                     break;
-                case "stop":
+                case "STOP":
                     Status.Foreground = Brushes.Red;
                     Status.Content = "STOP";
                     running = false;
                     //brush = this.greenBrush;
+                    break;
+                case "GREEN":
+                    Status.Foreground = Brushes.Green;
+                    Status.Content = "GREEN";
+                    break;
+                case "CAMERA ON":
+                    Status.Foreground = Brushes.Green;
+                    Status.Content = "ON";
+                    running = true;
+                    break;
+                case "CAMERA OFF":
+                    Status.Foreground = Brushes.Red;
+                    Status.Content = "OFF";
+                    running = false;
                     break;
                 default:
                     //brush = this.blackBrush;
@@ -452,7 +544,7 @@ Ensure you have the Microsoft Speech SDK installed and configured.",
         {
             closing = true; 
             StopKinect(kinectSensorChooser1.Kinect);
-            sw.Close();
+            //sw.Close();
             stopwatch.Stop();
         }
     }

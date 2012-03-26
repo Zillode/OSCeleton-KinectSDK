@@ -1,0 +1,15 @@
+﻿<Window x:Class="SkeletalTracking.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="600" Width="800" Loaded="Window_Loaded" 
+        xmlns:my="clr-namespace:Microsoft.Samples.Kinect.WpfViewers;assembly=Microsoft.Samples.Kinect.WpfViewers" 
+        Closing="Window_Closing" WindowState="Maximized">       
+    <Canvas Name="MainCanvas">
+        <my:KinectColorViewer Canvas.Left="0" Canvas.Top="0" Width="640" Height="480" Name="kinectColorViewer1" 
+                              Kinect="{Binding ElementName=kinectSensorChooser1, Path=Kinect}" />
+        <Ellipse Canvas.Left="0" Canvas.Top="0" Height="50" Name="leftEllipse"  Width="50" Fill="#FF4D298D" Opacity="1" Stroke="White" />
+        <Ellipse Canvas.Left="100" Canvas.Top="0" Fill="#FF2CACE3" Height="50" Name="rightEllipse" Width="50" Opacity="1" Stroke="White" />
+        <my:KinectSensorChooser Canvas.Left="250" Canvas.Top="380" Name="kinectSensorChooser1" Width="328" />
+        <Image Canvas.Left="66" Canvas.Top="90" Height="87" Name="headImage" Stretch="Fill" Width="84" Source="/SkeletalTracking;component/c4f-color.png" />
+    </Canvas>
+</Window>
