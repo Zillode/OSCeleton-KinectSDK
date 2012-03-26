@@ -158,6 +158,7 @@ namespace SkeletalTracking
                                 where s.TrackingState == SkeletonTrackingState.Tracked
                                 select s).FirstOrDefault();
             if (first == null) return;
+
                 SkeletonPoint ShoulderLeft = first.Joints[JointType.ShoulderLeft].Position;
                 SkeletonPoint ShoulderRight = first.Joints[JointType.ShoulderRight].Position;
                 SkeletonPoint HandLeft = first.Joints[JointType.HandLeft].Position;
@@ -197,8 +198,9 @@ namespace SkeletalTracking
                 }
 
                 //Set location
-                ScalePosition(leftEllipse, first.Joints[JointType.HandLeft]);
-                ScalePosition(rightEllipse, first.Joints[JointType.HandRight]);
+                ScalePositionPerformant(headImage, first.Joints[JointType.Head]);
+                ScalePositionPerformant(leftEllipse, first.Joints[JointType.HandLeft]);
+                ScalePositionPerformant(rightEllipse, first.Joints[JointType.HandRight]);
                 //CameraPosition(headImage, headColorPoint);
                 //CameraPosition(leftEllipse, leftColorPoint);
                 //CameraPosition(rightEllipse, rightColorPoint);
@@ -403,6 +405,19 @@ namespace SkeletalTracking
             Canvas.SetLeft(element, scaledJoint.Position.X);
             Canvas.SetTop(element, scaledJoint.Position.Y); 
             
+        }
+
+        private void ScalePositionPerformant(FrameworkElement element, Joint joint)
+        {
+            //convert the value to X/Y
+            //Joint scaledJoint = joint.ScaleTo(1280, 720); 
+
+            //convert & scale (.3 = means 1/3 of joint distance)
+            Joint scaledJoint = joint.ScaleTo(640, 480);//joint.ScaleTo(640, 480, .3f, .3f);
+
+            Canvas.SetLeft(element, scaledJoint.Position.X - (element.Width / 2));
+            Canvas.SetTop(element, scaledJoint.Position.Y - (element.Width / 2));
+
         }
 
         private static RecognizerInfo GetKinectRecognizer()
