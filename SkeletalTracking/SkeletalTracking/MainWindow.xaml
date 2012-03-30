@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="MainWindow" Height="600" Width="800" Loaded="Window_Loaded" 
         xmlns:my="clr-namespace:Microsoft.Samples.Kinect.WpfViewers;assembly=Microsoft.Samples.Kinect.WpfViewers" 
-        Closing="Window_Closing" WindowState="Maximized">       
+        Closing="Window_Closing">       
     <Canvas Name="MainCanvas">
         <my:KinectColorViewer Canvas.Left="0" Canvas.Top="0" Width="640" Height="480" Name="kinectColorViewer1" 
                               Kinect="{Binding ElementName=kinectSensorChooser1, Path=Kinect}" />
