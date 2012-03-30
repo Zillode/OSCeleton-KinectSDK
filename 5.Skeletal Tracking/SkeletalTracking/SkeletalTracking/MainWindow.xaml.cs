@@ -198,9 +198,9 @@ namespace SkeletalTracking
                 }
 
                 //Set location
-                ScalePositionPerformant(headImage, first.Joints[JointType.Head]);
-                ScalePositionPerformant(leftEllipse, first.Joints[JointType.HandLeft]);
-                ScalePositionPerformant(rightEllipse, first.Joints[JointType.HandRight]);
+                ScalePosition2(headImage, first.Joints[JointType.Head]);
+                ScalePosition2(leftEllipse, first.Joints[JointType.HandLeft]);
+                ScalePosition2(rightEllipse, first.Joints[JointType.HandRight]);
                 //CameraPosition(headImage, headColorPoint);
                 //CameraPosition(leftEllipse, leftColorPoint);
                 //CameraPosition(rightEllipse, rightColorPoint);
@@ -407,7 +407,7 @@ namespace SkeletalTracking
             
         }
 
-        private void ScalePositionPerformant(FrameworkElement element, Joint joint)
+        private void ScalePosition2(FrameworkElement element, Joint joint)
         {
             //convert the value to X/Y
             //Joint scaledJoint = joint.ScaleTo(1280, 720); 
