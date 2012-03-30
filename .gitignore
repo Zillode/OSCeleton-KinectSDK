@@ -1,8 +1,11 @@
 
-/5.Skeletal Tracking/SkeletalTracking/SkeletalTracking/bin
-/5.Skeletal Tracking/SkeletalTracking/SkeletalTracking/obj
-/5.Skeletal Tracking/SkeletalTrackingVB/SkeletalTracking/bin
-/5.Skeletal Tracking/SkeletalTrackingVB/SkeletalTracking/obj
-/KinectTest/KinectTest/bin
-/KinectTest/KinectTest/obj
-/5.Skeletal Tracking/SkeletalTracking/SkeletalTracking.suo
+/SkeletalTracking/SkeletalTracking/bin/
+/SkeletalTracking/SkeletalTracking/obj/
+/SkeletalTrackingVB/SkeletalTracking/bin/
+/SkeletalTrackingVB/SkeletalTracking/obj/
+/SkeletalTracking/SkeletalTracking.suo
+/SkeletalTracking/SkeletalTracking/SkeletalTracking.csproj.user
+/Dependencies/KinectWpfViewers/obj/
+/Dependencies/KinectWpfViewers/bin/
+/Dependencies/KinectWpfViewers/Microsoft.Samples.Kinect.WpfViewers.suo
+/Dependencies/KinectWpfViewers/Microsoft.Samples.Kinect.WpfViewers.sln.docstates.suo
