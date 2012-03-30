@@ -77,7 +77,7 @@ namespace SkeletalTracking
             if (writeFile)
             {
                 fileWriter = new StreamWriter(string.Format("points-{0:yyyy-MM-dd_hh-mm-ss-tt}.csv", DateTime.Now), false);
-                fileWriter.WriteLine("Joint, joint, user, x, y, z, on");
+                fileWriter.WriteLine("Joint, user, joint, x, y, z, on");
             }
             kinectSensorChooser1.KinectSensorChanged += new DependencyPropertyChangedEventHandler(kinectSensorChooser1_KinectSensorChanged);
         }
@@ -239,13 +239,16 @@ namespace SkeletalTracking
         {
             if (osc != null)
             {
-                osc.Send(new OscElement("/joint", oscMapping[joint], 0, x*pointScale, y*pointScale, z*pointScale));
+                osc.Send(new OscElement("/joint", oscMapping[joint], user, x*pointScale, -y*pointScale, z*pointScale));
             }
             if (fileWriter != null)
             {
-                fileWriter.WriteLine("Joint, " + joint + ", 0, " +
-                    x * pointScale + ", " + y * pointScale + ", " + z * pointScale + ", " +
-                    stopwatch.ElapsedMilliseconds);
+                // Joint, user, joint, x, y, z, on
+                fileWriter.WriteLine("Joint,"+user+","+joint+","+
+                    (x * pointScale).ToString().Replace(",",".") + "," +
+                    (-y * pointScale).ToString().Replace(",",".") + "," +
+                    (z * pointScale).ToString().Replace(",",".") + "," +
+                    stopwatch.ElapsedMilliseconds.ToString().Replace(",","."));
             }
         }
 
@@ -479,6 +482,10 @@ Ensure you have the Microsoft Speech SDK installed and configured.",
         private void Start()
         {
             var audioSource = this.sensor.AudioSource;
+            if (audioSource == null)
+            {
+                return;
+            }
             audioSource.BeamAngleMode = BeamAngleMode.Adaptive;
             var kinectStream = audioSource.Start();
             //this.stream = new EnergyCalculatingPassThroughStream(kinectStream);
