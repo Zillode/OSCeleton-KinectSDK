@@ -10,7 +10,7 @@
         <Ellipse Canvas.Left="0" Canvas.Top="0" Height="50" Name="leftEllipse"  Width="50" Fill="#FF4D298D" Opacity="1" Stroke="White" />
         <Ellipse Canvas.Left="100" Canvas.Top="0" Fill="#FF2CACE3" Height="50" Name="rightEllipse" Width="50" Opacity="1" Stroke="White" />
         <my:KinectSensorChooser Canvas.Left="250" Canvas.Top="380" Name="kinectSensorChooser1" Width="328" />
-        <Image Canvas.Left="66" Canvas.Top="90" Height="87" Name="headImage" Stretch="Fill" Width="84" Source="/SkeletalTracking;component/c4f-color.png" />
+        <Image Canvas.Left="66" Canvas.Top="90" Height="87" Name="headImage" Stretch="Fill" Width="84" Source="/SkeletalTracking;component/smiley.png" />
         <Label Canvas.Left="640" Width="140" Name="Status" Foreground="Red"  FontSize="36" HorizontalAlignment="Center" VerticalContentAlignment="Center" Height="480">STOP</Label>
     </Canvas>
 </Window>
