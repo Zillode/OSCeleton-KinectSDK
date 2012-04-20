@@ -166,20 +166,20 @@ namespace SkeletalTracking
                          select s).FirstOrDefault();
             if (first == null) return;
 
-            if (!allUsers)
+            if (!allUsers && capturing)
             {
 
                 if (!fullBody)
                 {
                     SkeletonPoint HandRight = first.Joints[JointType.HandRight].Position;
-                    SendMessage(0, 16, HandRight.X * pointScale, HandRight.Y * pointScale, HandRight.Z * pointScale);
+                    SendMessage(0, 15, HandRight.X, HandRight.Y, HandRight.Z);
                 }
                 else
                 {
                     SendSkeleton(0, first);
                 }
             }
-            else
+            else if (capturing)
             {
 
                 IEnumerable<Skeleton> trackedSkeletons = (
@@ -191,7 +191,7 @@ namespace SkeletalTracking
                     if (!fullBody)
                     {
                         SkeletonPoint HandRight = s.Joints[JointType.HandRight].Position;
-                        SendMessage(s.TrackingId, 16, HandRight.X, HandRight.Y * pointScale, HandRight.Z * pointScale);
+                        SendMessage(s.TrackingId, 15, HandRight.X, HandRight.Y, HandRight.Z);
                     }
                     else
                     {
@@ -239,7 +239,8 @@ namespace SkeletalTracking
         {
             if (osc != null)
             {
-                osc.Send(new OscElement("/joint", oscMapping[joint], user, x*pointScale, -y*pointScale, z*pointScale));
+                Status.Content = -y * pointScale;
+                osc.Send(new OscElement("/joint", oscMapping[joint], user, (int)(x*pointScale), (int)(-y*pointScale), (int)(z*pointScale)));
             }
             if (fileWriter != null)
             {
