@@ -19,7 +19,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Microsoft.Kinect;
 using Coding4Fun.Kinect.Wpf;
-using System.IO; 
+using System.IO;
 //speech
 using Microsoft.Speech.AudioFormat;
 using Microsoft.Speech.Recognition;
@@ -166,39 +166,39 @@ namespace SkeletalTracking
                          select s).FirstOrDefault();
             if (first == null) return;
 
-            if (!allUsers)
-            {
-
-                if (!fullBody)
-                {
-                    SkeletonPoint HandRight = first.Joints[JointType.HandRight].Position;
-                    SendMessage(0, 16, HandRight.X * pointScale, HandRight.Y * pointScale, HandRight.Z * pointScale);
-                }
-                else
-                {
-                    SendSkeleton(0, first);
-                }
-            }
-            else
-            {
-
-                IEnumerable<Skeleton> trackedSkeletons = (
-                    from s in allSkeletons
-                    where s.TrackingState == SkeletonTrackingState.Tracked
-                    select s);
-                foreach (Skeleton s in trackedSkeletons)
-                {
-                    if (!fullBody)
-                    {
-                        SkeletonPoint HandRight = s.Joints[JointType.HandRight].Position;
-                        SendMessage(s.TrackingId, 16, HandRight.X, HandRight.Y * pointScale, HandRight.Z * pointScale);
-                    }
-                    else
-                    {
-                        SendSkeleton(s.TrackingId, s);
-                    }
-                }
-            }
+						if (capturing) {
+							if (!allUsers)
+							{
+								if (!fullBody)
+								{
+									SkeletonPoint HandRight = first.Joints[JointType.HandRight].Position;
+									SendMessage(0, 15, HandRight.X, HandRight.Y, HandRight.Z);
+								}
+								else
+								{
+									SendSkeleton(0, first);
+								}
+							}
+							else
+							{
+								IEnumerable<Skeleton> trackedSkeletons = (
+										from s in allSkeletons
+										where s.TrackingState == SkeletonTrackingState.Tracked
+										select s);
+								foreach (Skeleton s in trackedSkeletons)
+								{
+									if (!fullBody)
+									{
+										SkeletonPoint HandRight = s.Joints[JointType.HandRight].Position;
+										SendMessage(s.TrackingId, 15, HandRight.X, HandRight.Y, HandRight.Z);
+									}
+									else
+									{
+										SendSkeleton(s.TrackingId, s);
+									}
+								}
+							}
+						}
 
             ScalePosition2(headImage, first.Joints[JointType.Head]);
             ScalePosition2(leftEllipse, first.Joints[JointType.HandLeft]);
@@ -239,7 +239,8 @@ namespace SkeletalTracking
         {
             if (osc != null)
             {
-                osc.Send(new OscElement("/joint", oscMapping[joint], user, x*pointScale, -y*pointScale, z*pointScale));
+                Status.Content = -y * pointScale;
+                osc.Send(new OscElement("/joint", oscMapping[joint], user, (int)(x*pointScale), (int)(-y*pointScale), (int)(z*pointScale)));
             }
             if (fileWriter != null)
             {
@@ -264,7 +265,7 @@ namespace SkeletalTracking
 
             if (first == null)
             {
-                return; 
+                return;
             }
 
             //set scaled position
@@ -272,7 +273,7 @@ namespace SkeletalTracking
             ScalePosition(leftEllipse, first.Joints[JointType.HandLeft]);
             ScalePosition(rightEllipse, first.Joints[JointType.HandRight]);
 
-            GetCameraPoint(first, e); 
+            GetCameraPoint(first, e);
 
         }
 
@@ -286,7 +287,7 @@ namespace SkeletalTracking
                 {
                     return;
                 }
-                
+
 
                 //Map a joint location to a point on the depth map
                 //head
@@ -318,13 +319,13 @@ namespace SkeletalTracking
                 SkeletonPoint ShoulderRight = first.Joints[JointType.ShoulderRight].Position;
                 SkeletonPoint HandLeft = first.Joints[JointType.HandLeft].Position;
                 SkeletonPoint HandRight = first.Joints[JointType.HandRight].Position;
-                
+
                 Status.Foreground = Brushes.Black;
 
                 CameraPosition(headImage, headColorPoint);
                 CameraPosition(leftEllipse, leftColorPoint);
                 CameraPosition(rightEllipse, rightColorPoint);
-            }        
+						}
         }
 
         private int Distance2D(double x1, double y1, int x2, int y2)
@@ -341,10 +342,10 @@ namespace SkeletalTracking
             {
                 if (skeletonFrameData == null)
                 {
-                    return null; 
+                    return null;
                 }
 
-                
+
                 skeletonFrameData.CopySkeletonDataTo(allSkeletons);
 
                 //get the first tracked skeleton
