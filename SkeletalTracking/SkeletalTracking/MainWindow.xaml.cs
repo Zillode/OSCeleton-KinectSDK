@@ -19,7 +19,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Microsoft.Kinect;
 using Coding4Fun.Kinect.Wpf;
-using System.IO; 
+using System.IO;
 //speech
 using Microsoft.Speech.AudioFormat;
 using Microsoft.Speech.Recognition;
@@ -104,7 +104,7 @@ namespace SkeletalTracking
             sensor.SkeletonStream.Enable(parameters);
 
             //sensor.AllFramesReady += new EventHandler<AllFramesReadyEventArgs>(sensor_AllFramesReady);
-            //sensor.DepthStream.Enable(DepthImageFormat.Resolution640x480Fps30); 
+            //sensor.DepthStream.Enable(DepthImageFormat.Resolution640x480Fps30);
             //sensor.ColorStream.Enable(ColorImageFormat.RgbResolution640x480Fps30);
             sensor.SkeletonFrameReady += new EventHandler<SkeletonFrameReadyEventArgs>(sensor_SkeletonFrameReady);
 
@@ -166,39 +166,39 @@ namespace SkeletalTracking
                          select s).FirstOrDefault();
             if (first == null) return;
 
-            if (!allUsers && capturing)
-            {
-
-                if (!fullBody)
-                {
-                    SkeletonPoint HandRight = first.Joints[JointType.HandRight].Position;
-                    SendMessage(0, 15, HandRight.X, HandRight.Y, HandRight.Z);
-                }
-                else
-                {
-                    SendSkeleton(0, first);
-                }
-            }
-            else if (capturing)
-            {
-
-                IEnumerable<Skeleton> trackedSkeletons = (
-                    from s in allSkeletons
-                    where s.TrackingState == SkeletonTrackingState.Tracked
-                    select s);
-                foreach (Skeleton s in trackedSkeletons)
-                {
-                    if (!fullBody)
-                    {
-                        SkeletonPoint HandRight = s.Joints[JointType.HandRight].Position;
-                        SendMessage(s.TrackingId, 15, HandRight.X, HandRight.Y, HandRight.Z);
-                    }
-                    else
-                    {
-                        SendSkeleton(s.TrackingId, s);
-                    }
-                }
-            }
+						if (capturing) {
+							if (!allUsers)
+							{
+								if (!fullBody)
+								{
+									SkeletonPoint HandRight = first.Joints[JointType.HandRight].Position;
+									SendMessage(0, 15, HandRight.X, HandRight.Y, HandRight.Z);
+								}
+								else
+								{
+									SendSkeleton(0, first);
+								}
+							}
+							else
+							{
+								IEnumerable<Skeleton> trackedSkeletons = (
+										from s in allSkeletons
+										where s.TrackingState == SkeletonTrackingState.Tracked
+										select s);
+								foreach (Skeleton s in trackedSkeletons)
+								{
+									if (!fullBody)
+									{
+										SkeletonPoint HandRight = s.Joints[JointType.HandRight].Position;
+										SendMessage(s.TrackingId, 15, HandRight.X, HandRight.Y, HandRight.Z);
+									}
+									else
+									{
+										SendSkeleton(s.TrackingId, s);
+									}
+								}
+							}
+						}
 
             ScalePosition2(headImage, first.Joints[JointType.Head]);
             ScalePosition2(leftEllipse, first.Joints[JointType.HandLeft]);
@@ -265,7 +265,7 @@ namespace SkeletalTracking
 
             if (first == null)
             {
-                return; 
+                return;
             }
 
             //set scaled position
@@ -273,7 +273,7 @@ namespace SkeletalTracking
             ScalePosition(leftEllipse, first.Joints[JointType.HandLeft]);
             ScalePosition(rightEllipse, first.Joints[JointType.HandRight]);
 
-            GetCameraPoint(first, e); 
+            GetCameraPoint(first, e);
 
         }
 
@@ -287,7 +287,7 @@ namespace SkeletalTracking
                 {
                     return;
                 }
-                
+
 
                 //Map a joint location to a point on the depth map
                 //head
@@ -319,13 +319,13 @@ namespace SkeletalTracking
                 SkeletonPoint ShoulderRight = first.Joints[JointType.ShoulderRight].Position;
                 SkeletonPoint HandLeft = first.Joints[JointType.HandLeft].Position;
                 SkeletonPoint HandRight = first.Joints[JointType.HandRight].Position;
-                
+
                 Status.Foreground = Brushes.Black;
 
                 CameraPosition(headImage, headColorPoint);
                 CameraPosition(leftEllipse, leftColorPoint);
                 CameraPosition(rightEllipse, rightColorPoint);
-            }        
+            }
         }
 
         private int Distance2D(double x1, double y1, int x2, int y2)
@@ -342,10 +342,10 @@ namespace SkeletalTracking
             {
                 if (skeletonFrameData == null)
                 {
-                    return null; 
+                    return null;
                 }
 
-                
+
                 skeletonFrameData.CopySkeletonDataTo(allSkeletons);
 
                 //get the first tracked skeleton
@@ -367,7 +367,7 @@ namespace SkeletalTracking
             {
                 if (sensor.IsRunning)
                 {
-                    //stop sensor 
+                    //stop sensor
                     sensor.Stop();
 
                     //stop audio if not null
@@ -383,7 +383,7 @@ namespace SkeletalTracking
 
         private void CameraPosition(FrameworkElement element, ColorImagePoint point)
         {
-            //Divide by 2 for width and height so point is right in the middle 
+            //Divide by 2 for width and height so point is right in the middle
             // instead of in top/left corner
             Canvas.SetLeft(element, point.X - element.Width / 2);
             Canvas.SetTop(element, point.Y - element.Height / 2);
@@ -393,20 +393,20 @@ namespace SkeletalTracking
         private void ScalePosition(FrameworkElement element, Joint joint)
         {
             //convert the value to X/Y
-            //Joint scaledJoint = joint.ScaleTo(1280, 720); 
-            
+            //Joint scaledJoint = joint.ScaleTo(1280, 720);
+
             //convert & scale (.3 = means 1/3 of joint distance)
             Joint scaledJoint = joint.ScaleTo(1280, 720, .3f, .3f);
 
             Canvas.SetLeft(element, scaledJoint.Position.X);
-            Canvas.SetTop(element, scaledJoint.Position.Y); 
-            
+            Canvas.SetTop(element, scaledJoint.Position.Y);
+
         }
 
         private void ScalePosition2(FrameworkElement element, Joint joint)
         {
             //convert the value to X/Y
-            //Joint scaledJoint = joint.ScaleTo(1280, 720); 
+            //Joint scaledJoint = joint.ScaleTo(1280, 720);
 
             //convert & scale (.3 = means 1/3 of joint distance)
             Joint scaledJoint = joint.ScaleTo(640, 480);//joint.ScaleTo(640, 480, .3f, .3f);
@@ -464,7 +464,7 @@ Ensure you have the Microsoft Speech SDK installed and configured.",
             grammar.Add("stop");
             grammar.Add("green");
             grammar.Add("camera on");
-            grammar.Add("camera off"); 
+            grammar.Add("camera off");
 
             var gb = new GrammarBuilder { Culture = ri.Culture };
             gb.Append(grammar);
@@ -557,7 +557,7 @@ Ensure you have the Microsoft Speech SDK installed and configured.",
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            shuttingDown = true; 
+            shuttingDown = true;
             StopKinect(kinectSensorChooser1.Kinect);
             if (fileWriter != null)
             {
