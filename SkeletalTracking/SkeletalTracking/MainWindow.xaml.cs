@@ -48,14 +48,16 @@ namespace SkeletalTracking
         private StreamWriter fileWriter;
         private Stopwatch stopwatch;
 
+        private const int skeletonCount = 20;
+        private double pointScale = 1000;
         private bool shuttingDown = false;
-        private const int skeletonCount = 6;
+
         private bool allUsers = true;
         private bool fullBody = true;
         private bool capturing = true;
-        private bool writeOSC = true;
+        private bool writeOSC = false;
         private bool writeFile = true;
-        private double pointScale = 1000;
+        private bool voiceRecognition = false;
 
         private static List<String> oscMapping = new List<String> { "",
             "head", "neck", "torso", "waist",
@@ -76,7 +78,7 @@ namespace SkeletalTracking
             }
             if (writeFile)
             {
-                fileWriter = new StreamWriter(string.Format("points-{0:yyyy-MM-dd_hh-mm-ss-tt}.csv", DateTime.Now), false);
+                fileWriter = new StreamWriter(Environment.GetFolderPath(Environment.SpecialFolder.Personal) + "/" + string.Format("points-{0:yyyy-MM-dd_hh-mm-ss-tt}.csv", DateTime.Now), false);
                 fileWriter.WriteLine("Joint, user, joint, x, y, z, on");
             }
             kinectSensorChooser1.KinectSensorChanged += new DependencyPropertyChangedEventHandler(kinectSensorChooser1_KinectSensorChanged);
@@ -102,13 +104,12 @@ namespace SkeletalTracking
             };
 
             sensor.SkeletonStream.Enable(parameters);
-
-            //sensor.AllFramesReady += new EventHandler<AllFramesReadyEventArgs>(sensor_AllFramesReady);
-            //sensor.DepthStream.Enable(DepthImageFormat.Resolution640x480Fps30);
-            //sensor.ColorStream.Enable(ColorImageFormat.RgbResolution640x480Fps30);
             sensor.SkeletonFrameReady += new EventHandler<SkeletonFrameReadyEventArgs>(sensor_SkeletonFrameReady);
 
-            this.speechRecognizer = this.CreateSpeechRecognizer();
+            if (voiceRecognition)
+            {
+                this.speechRecognizer = this.CreateSpeechRecognizer();
+            }
 
             try
             {
@@ -121,30 +122,20 @@ namespace SkeletalTracking
 
             if (this.speechRecognizer != null && sensor != null)
             {
-                // NOTE: Need to wait 4 seconds for device to be ready to stream audio right after initialization
+                // Wait 4 seconds for device to be ready to stream audio
                 this.readyTimer = new DispatcherTimer();
                 this.readyTimer.Tick += this.ReadyTimerTick;
                 this.readyTimer.Interval = new TimeSpan(0, 0, 4);
                 this.readyTimer.Start();
 
-                Status.Content = "Init";
-                //this.ReportSpeechStatus("Initializing audio stream...");
-                //this.UpdateInstructionsText(string.Empty);
-
-                //this.Closing += this.MainWindowClosing;
-            }
-            else
-            {
-                Status.Content = "FAILED";
+                Status.Content = "Initialising";
             }
         }
 
         private void ReadyTimerTick(object sender, EventArgs e)
         {
             this.Start();
-            //this.ReportSpeechStatus("Ready to recognize speech!");
-            //this.UpdateInstructionsText("Say: 'red', 'green' or 'blue'");
-            Status.Content = "STOP";
+            Status.Content = "Listening...";
             this.readyTimer.Stop();
             this.readyTimer = null;
         }
@@ -166,39 +157,24 @@ namespace SkeletalTracking
                          select s).FirstOrDefault();
             if (first == null) return;
 
-						if (capturing) {
-							if (!allUsers)
-							{
-								if (!fullBody)
-								{
-									SkeletonPoint HandRight = first.Joints[JointType.HandRight].Position;
-									SendMessage(0, 15, HandRight.X, HandRight.Y, HandRight.Z);
-								}
-								else
-								{
-									SendSkeleton(0, first);
-								}
-							}
-							else
-							{
-								IEnumerable<Skeleton> trackedSkeletons = (
-										from s in allSkeletons
-										where s.TrackingState == SkeletonTrackingState.Tracked
-										select s);
-								foreach (Skeleton s in trackedSkeletons)
-								{
-									if (!fullBody)
-									{
-										SkeletonPoint HandRight = s.Joints[JointType.HandRight].Position;
-										SendMessage(s.TrackingId, 15, HandRight.X, HandRight.Y, HandRight.Z);
-									}
-									else
-									{
-										SendSkeleton(s.TrackingId, s);
-									}
-								}
-							}
-						}
+            if (capturing)
+            {
+                if (!allUsers)
+                {
+                        SendSkeleton(0, first);
+                }
+                else
+                {
+                    IEnumerable<Skeleton> trackedSkeletons = (
+                            from s in allSkeletons
+                            where s.TrackingState == SkeletonTrackingState.Tracked
+                            select s);
+                    foreach (Skeleton s in trackedSkeletons)
+                    {
+                        SendSkeleton(s.TrackingId, s);
+                    }
+                }
+            }
 
             ScalePosition2(headImage, first.Joints[JointType.Head]);
             ScalePosition2(leftEllipse, first.Joints[JointType.HandLeft]);
@@ -209,30 +185,37 @@ namespace SkeletalTracking
         {
             if (!capturing) { return; }
 
-            SendMessage(user, 1, s.Joints[JointType.Head].Position.X, s.Joints[JointType.Head].Position.Y, s.Joints[JointType.Head].Position.Z);
-            SendMessage(user, 2, s.Joints[JointType.ShoulderCenter].Position.X, s.Joints[JointType.ShoulderCenter].Position.Y, s.Joints[JointType.ShoulderCenter].Position.Z);
-            SendMessage(user, 3, s.Joints[JointType.Spine].Position.X, s.Joints[JointType.Spine].Position.Y, s.Joints[JointType.Spine].Position.Z);
-            SendMessage(user, 4, s.Joints[JointType.HipCenter].Position.X, s.Joints[JointType.HipCenter].Position.Y, s.Joints[JointType.HipCenter].Position.Z);
-            // SendMessage(user, 5, s.Joints[JointType.].Position.X, s.Joints[JointType.].Position.Y, s.Joints[JointType.].Position.Z);
-            SendMessage(user, 6, s.Joints[JointType.ShoulderLeft].Position.X, s.Joints[JointType.ShoulderLeft].Position.Y, s.Joints[JointType.ShoulderLeft].Position.Z);
-            SendMessage(user, 7, s.Joints[JointType.ElbowLeft].Position.X, s.Joints[JointType.ElbowLeft].Position.Y, s.Joints[JointType.ElbowLeft].Position.Z);
-            SendMessage(user, 8, s.Joints[JointType.WristLeft].Position.X, s.Joints[JointType.WristLeft].Position.Y, s.Joints[JointType.WristLeft].Position.Z);
-            SendMessage(user, 9, s.Joints[JointType.HandLeft].Position.X, s.Joints[JointType.HandLeft].Position.Y, s.Joints[JointType.HandLeft].Position.Z);
-            // SendMessage(user, 10, s.Joints[JointType.].Position.X, s.Joints[JointType.].Position.Y, s.Joints[JointType.].Position.Z);
-            // SendMessage(user, 11, s.Joints[JointType.].Position.X, s.Joints[JointType.].Position.Y, s.Joints[JointType.].Position.Z);
-            SendMessage(user, 12, s.Joints[JointType.ShoulderRight].Position.X, s.Joints[JointType.ShoulderRight].Position.Y, s.Joints[JointType.ShoulderRight].Position.Z);
-            SendMessage(user, 13, s.Joints[JointType.ElbowRight].Position.X, s.Joints[JointType.ElbowRight].Position.Y, s.Joints[JointType.ElbowRight].Position.Z);
-            SendMessage(user, 14, s.Joints[JointType.WristRight].Position.X, s.Joints[JointType.WristRight].Position.Y, s.Joints[JointType.WristRight].Position.Z);
-            SendMessage(user, 15, s.Joints[JointType.HandRight].Position.X, s.Joints[JointType.HandRight].Position.Y, s.Joints[JointType.HandRight].Position.Z);
-            // SendMessage(user, 16, s.Joints[JointType.].Position.X, s.Joints[JointType.].Position.Y, s.Joints[JointType.].Position.Z);
-            SendMessage(user, 17, s.Joints[JointType.HipLeft].Position.X, s.Joints[JointType.HipLeft].Position.Y, s.Joints[JointType.HipLeft].Position.Z);
-            SendMessage(user, 18, s.Joints[JointType.KneeLeft].Position.X, s.Joints[JointType.KneeLeft].Position.Y, s.Joints[JointType.KneeLeft].Position.Z);
-            SendMessage(user, 19, s.Joints[JointType.AnkleLeft].Position.X, s.Joints[JointType.AnkleLeft].Position.Y, s.Joints[JointType.AnkleLeft].Position.Z);
-            SendMessage(user, 20, s.Joints[JointType.FootLeft].Position.X, s.Joints[JointType.FootLeft].Position.Y, s.Joints[JointType.FootLeft].Position.Z);
-            SendMessage(user, 21, s.Joints[JointType.HipRight].Position.X, s.Joints[JointType.HipRight].Position.Y, s.Joints[JointType.HipRight].Position.Z);
-            SendMessage(user, 22, s.Joints[JointType.KneeRight].Position.X, s.Joints[JointType.KneeRight].Position.Y, s.Joints[JointType.KneeRight].Position.Z);
-            SendMessage(user, 23, s.Joints[JointType.AnkleRight].Position.X, s.Joints[JointType.AnkleRight].Position.Y, s.Joints[JointType.AnkleRight].Position.Z);
-            SendMessage(user, 24, s.Joints[JointType.FootRight].Position.X, s.Joints[JointType.FootRight].Position.Y, s.Joints[JointType.FootRight].Position.Z);
+            if (!fullBody)
+            {
+                SendMessage(user, 15, s.Joints[JointType.HandRight].Position.X, s.Joints[JointType.HandRight].Position.Y, s.Joints[JointType.HandRight].Position.Z);
+            }
+            else
+            {
+                SendMessage(user, 1, s.Joints[JointType.Head].Position.X, s.Joints[JointType.Head].Position.Y, s.Joints[JointType.Head].Position.Z);
+                SendMessage(user, 2, s.Joints[JointType.ShoulderCenter].Position.X, s.Joints[JointType.ShoulderCenter].Position.Y, s.Joints[JointType.ShoulderCenter].Position.Z);
+                SendMessage(user, 3, s.Joints[JointType.Spine].Position.X, s.Joints[JointType.Spine].Position.Y, s.Joints[JointType.Spine].Position.Z);
+                SendMessage(user, 4, s.Joints[JointType.HipCenter].Position.X, s.Joints[JointType.HipCenter].Position.Y, s.Joints[JointType.HipCenter].Position.Z);
+                // SendMessage(user, 5, s.Joints[JointType.].Position.X, s.Joints[JointType.].Position.Y, s.Joints[JointType.].Position.Z);
+                SendMessage(user, 6, s.Joints[JointType.ShoulderLeft].Position.X, s.Joints[JointType.ShoulderLeft].Position.Y, s.Joints[JointType.ShoulderLeft].Position.Z);
+                SendMessage(user, 7, s.Joints[JointType.ElbowLeft].Position.X, s.Joints[JointType.ElbowLeft].Position.Y, s.Joints[JointType.ElbowLeft].Position.Z);
+                SendMessage(user, 8, s.Joints[JointType.WristLeft].Position.X, s.Joints[JointType.WristLeft].Position.Y, s.Joints[JointType.WristLeft].Position.Z);
+                SendMessage(user, 9, s.Joints[JointType.HandLeft].Position.X, s.Joints[JointType.HandLeft].Position.Y, s.Joints[JointType.HandLeft].Position.Z);
+                // SendMessage(user, 10, s.Joints[JointType.].Position.X, s.Joints[JointType.].Position.Y, s.Joints[JointType.].Position.Z);
+                // SendMessage(user, 11, s.Joints[JointType.].Position.X, s.Joints[JointType.].Position.Y, s.Joints[JointType.].Position.Z);
+                SendMessage(user, 12, s.Joints[JointType.ShoulderRight].Position.X, s.Joints[JointType.ShoulderRight].Position.Y, s.Joints[JointType.ShoulderRight].Position.Z);
+                SendMessage(user, 13, s.Joints[JointType.ElbowRight].Position.X, s.Joints[JointType.ElbowRight].Position.Y, s.Joints[JointType.ElbowRight].Position.Z);
+                SendMessage(user, 14, s.Joints[JointType.WristRight].Position.X, s.Joints[JointType.WristRight].Position.Y, s.Joints[JointType.WristRight].Position.Z);
+                SendMessage(user, 15, s.Joints[JointType.HandRight].Position.X, s.Joints[JointType.HandRight].Position.Y, s.Joints[JointType.HandRight].Position.Z);
+                // SendMessage(user, 16, s.Joints[JointType.].Position.X, s.Joints[JointType.].Position.Y, s.Joints[JointType.].Position.Z);
+                SendMessage(user, 17, s.Joints[JointType.HipLeft].Position.X, s.Joints[JointType.HipLeft].Position.Y, s.Joints[JointType.HipLeft].Position.Z);
+                SendMessage(user, 18, s.Joints[JointType.KneeLeft].Position.X, s.Joints[JointType.KneeLeft].Position.Y, s.Joints[JointType.KneeLeft].Position.Z);
+                SendMessage(user, 19, s.Joints[JointType.AnkleLeft].Position.X, s.Joints[JointType.AnkleLeft].Position.Y, s.Joints[JointType.AnkleLeft].Position.Z);
+                SendMessage(user, 20, s.Joints[JointType.FootLeft].Position.X, s.Joints[JointType.FootLeft].Position.Y, s.Joints[JointType.FootLeft].Position.Z);
+                SendMessage(user, 21, s.Joints[JointType.HipRight].Position.X, s.Joints[JointType.HipRight].Position.Y, s.Joints[JointType.HipRight].Position.Z);
+                SendMessage(user, 22, s.Joints[JointType.KneeRight].Position.X, s.Joints[JointType.KneeRight].Position.Y, s.Joints[JointType.KneeRight].Position.Z);
+                SendMessage(user, 23, s.Joints[JointType.AnkleRight].Position.X, s.Joints[JointType.AnkleRight].Position.Y, s.Joints[JointType.AnkleRight].Position.Z);
+                SendMessage(user, 24, s.Joints[JointType.FootRight].Position.X, s.Joints[JointType.FootRight].Position.Y, s.Joints[JointType.FootRight].Position.Z);
+            }
         }
 
         void SendMessage(int user, int joint, double x, double y, double z)
@@ -240,124 +223,16 @@ namespace SkeletalTracking
             if (osc != null)
             {
                 Status.Content = -y * pointScale;
-                osc.Send(new OscElement("/joint", oscMapping[joint], user, (int)(x*pointScale), (int)(-y*pointScale), (int)(z*pointScale)));
+                osc.Send(new OscElement("/joint", oscMapping[joint], user, (int)(x * pointScale), (int)(-y * pointScale), (int)(z * pointScale)));
             }
             if (fileWriter != null)
             {
                 // Joint, user, joint, x, y, z, on
-                fileWriter.WriteLine("Joint,"+user+","+joint+","+
-                    (x * pointScale).ToString().Replace(",",".") + "," +
-                    (-y * pointScale).ToString().Replace(",",".") + "," +
-                    (z * pointScale).ToString().Replace(",",".") + "," +
-                    stopwatch.ElapsedMilliseconds.ToString().Replace(",","."));
-            }
-        }
-
-        void sensor_AllFramesReady(object sender, AllFramesReadyEventArgs e)
-        {
-            if (shuttingDown)
-            {
-                return;
-            }
-
-            //Get a skeleton
-            Skeleton first =  GetFirstSkeleton(e);
-
-            if (first == null)
-            {
-                return;
-            }
-
-            //set scaled position
-            //ScalePosition(headImage, first.Joints[JointType.Head]);
-            ScalePosition(leftEllipse, first.Joints[JointType.HandLeft]);
-            ScalePosition(rightEllipse, first.Joints[JointType.HandRight]);
-
-            GetCameraPoint(first, e);
-
-        }
-
-        void GetCameraPoint(Skeleton first, AllFramesReadyEventArgs e)
-        {
-
-            using (DepthImageFrame depth = e.OpenDepthImageFrame())
-            {
-                if (depth == null ||
-                    kinectSensorChooser1.Kinect == null)
-                {
-                    return;
-                }
-
-
-                //Map a joint location to a point on the depth map
-                //head
-                DepthImagePoint headDepthPoint =
-                    depth.MapFromSkeletonPoint(first.Joints[JointType.Head].Position);
-                //left hand
-                DepthImagePoint leftDepthPoint =
-                    depth.MapFromSkeletonPoint(first.Joints[JointType.HandLeft].Position);
-                //right hand
-                DepthImagePoint rightDepthPoint =
-                    depth.MapFromSkeletonPoint(first.Joints[JointType.HandRight].Position);
-
-
-                //Map a depth point to a point on the color image
-                //head
-                ColorImagePoint headColorPoint =
-                    depth.MapToColorImagePoint(headDepthPoint.X, headDepthPoint.Y,
-                    ColorImageFormat.RgbResolution640x480Fps30);
-                //left hand
-                ColorImagePoint leftColorPoint =
-                    depth.MapToColorImagePoint(leftDepthPoint.X, leftDepthPoint.Y,
-                    ColorImageFormat.RgbResolution640x480Fps30);
-                //right hand
-                ColorImagePoint rightColorPoint =
-                    depth.MapToColorImagePoint(rightDepthPoint.X, rightDepthPoint.Y,
-                    ColorImageFormat.RgbResolution640x480Fps30);
-
-                SkeletonPoint ShoulderLeft = first.Joints[JointType.ShoulderLeft].Position;
-                SkeletonPoint ShoulderRight = first.Joints[JointType.ShoulderRight].Position;
-                SkeletonPoint HandLeft = first.Joints[JointType.HandLeft].Position;
-                SkeletonPoint HandRight = first.Joints[JointType.HandRight].Position;
-
-                Status.Foreground = Brushes.Black;
-
-                CameraPosition(headImage, headColorPoint);
-                CameraPosition(leftEllipse, leftColorPoint);
-                CameraPosition(rightEllipse, rightColorPoint);
-            }
-        }
-
-        private int Distance2D(double x1, double y1, int x2, int y2)
-        {
-            double part1 = Math.Pow((x2 - x1), 2);
-            double part2 = Math.Pow((y2 - y1), 2);
-            double underRadical = part1 + part2;
-            return (int)Math.Sqrt(underRadical);
-        }
-
-        Skeleton GetFirstSkeleton(AllFramesReadyEventArgs e)
-        {
-            using (SkeletonFrame skeletonFrameData = e.OpenSkeletonFrame())
-            {
-                if (skeletonFrameData == null)
-                {
-                    return null;
-                }
-
-
-                skeletonFrameData.CopySkeletonDataTo(allSkeletons);
-
-                //get the first tracked skeleton
-                Skeleton first = (from s in allSkeletons
-                                         where s.TrackingState == SkeletonTrackingState.Tracked
-                                         select s).FirstOrDefault();
-
-                ScalePosition(leftEllipse, first.Joints[JointType.HandLeft]);
-                ScalePosition(rightEllipse, first.Joints[JointType.HandRight]);
-
-                return first;
-
+                fileWriter.WriteLine("Joint," + user + "," + joint + "," +
+                    (x * pointScale).ToString().Replace(",", ".") + "," +
+                    (-y * pointScale).ToString().Replace(",", ".") + "," +
+                    (z * pointScale).ToString().Replace(",", ".") + "," +
+                    stopwatch.ElapsedMilliseconds.ToString().Replace(",", "."));
             }
         }
 
@@ -379,15 +254,6 @@ namespace SkeletalTracking
 
                 }
             }
-        }
-
-        private void CameraPosition(FrameworkElement element, ColorImagePoint point)
-        {
-            //Divide by 2 for width and height so point is right in the middle
-            // instead of in top/left corner
-            Canvas.SetLeft(element, point.X - element.Width / 2);
-            Canvas.SetTop(element, point.Y - element.Height / 2);
-
         }
 
         private void ScalePosition(FrameworkElement element, Joint joint)
@@ -462,7 +328,6 @@ Ensure you have the Microsoft Speech SDK installed and configured.",
             var grammar = new Choices();
             grammar.Add("start");
             grammar.Add("stop");
-            grammar.Add("green");
             grammar.Add("camera on");
             grammar.Add("camera off");
 
@@ -515,14 +380,13 @@ Ensure you have the Microsoft Speech SDK installed and configured.",
             if (e.Result.Confidence < 0.05)
             {
                 Status.Foreground = Brushes.Black;
-                Status.Content = "L: " + e.Result.Text;
+                Status.Content = "A: " + e.Result.Text;
                 return;
             }
 
             switch (e.Result.Text.ToUpperInvariant())
             {
                 case "START":
-                    //brush = this.redBrush;
                     Status.Foreground = Brushes.Green;
                     Status.Content = "START";
                     capturing = true;
@@ -531,11 +395,6 @@ Ensure you have the Microsoft Speech SDK installed and configured.",
                     Status.Foreground = Brushes.Red;
                     Status.Content = "STOP";
                     capturing = false;
-                    //brush = this.greenBrush;
-                    break;
-                case "GREEN":
-                    Status.Foreground = Brushes.Green;
-                    Status.Content = "GREEN";
                     break;
                 case "CAMERA ON":
                     Status.Foreground = Brushes.Green;
@@ -548,7 +407,6 @@ Ensure you have the Microsoft Speech SDK installed and configured.",
                     capturing = false;
                     break;
                 default:
-                    //brush = this.blackBrush;
                     Status.Content = e.Result.Text;
                     break;
             }
