@@ -48,7 +48,7 @@ namespace SkeletalTracking
         private StreamWriter fileWriter;
         private Stopwatch stopwatch;
 
-        private const int skeletonCount = 20;
+        private const int skeletonCount = 6;
         private double pointScale = 1000;
         private bool shuttingDown = false;
 
