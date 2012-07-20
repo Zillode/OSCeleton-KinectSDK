@@ -55,7 +55,7 @@ namespace SkeletalTracking
         private bool allUsers = true;
         private bool fullBody = true;
         private bool capturing = true;
-        private bool writeOSC = false;
+        private bool writeOSC = true;
         private bool writeFile = true;
         private bool voiceRecognition = false;
 
