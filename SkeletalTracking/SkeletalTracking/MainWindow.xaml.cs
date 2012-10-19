@@ -187,38 +187,46 @@ namespace SkeletalTracking
 
             if (!fullBody)
             {
-                SendMessage(user, 15, s.Joints[JointType.HandRight].Position.X, s.Joints[JointType.HandRight].Position.Y, s.Joints[JointType.HandRight].Position.Z);
+                SendJointInformation(user, 15, s.Joints[JointType.HandRight], s.BoneOrientations[JointType.HandRight]);
             }
             else
             {
-                SendMessage(user, 1, s.Joints[JointType.Head].Position.X, s.Joints[JointType.Head].Position.Y, s.Joints[JointType.Head].Position.Z);
-                SendMessage(user, 2, s.Joints[JointType.ShoulderCenter].Position.X, s.Joints[JointType.ShoulderCenter].Position.Y, s.Joints[JointType.ShoulderCenter].Position.Z);
-                SendMessage(user, 3, s.Joints[JointType.Spine].Position.X, s.Joints[JointType.Spine].Position.Y, s.Joints[JointType.Spine].Position.Z);
-                SendMessage(user, 4, s.Joints[JointType.HipCenter].Position.X, s.Joints[JointType.HipCenter].Position.Y, s.Joints[JointType.HipCenter].Position.Z);
-                // SendMessage(user, 5, s.Joints[JointType.].Position.X, s.Joints[JointType.].Position.Y, s.Joints[JointType.].Position.Z);
-                SendMessage(user, 6, s.Joints[JointType.ShoulderLeft].Position.X, s.Joints[JointType.ShoulderLeft].Position.Y, s.Joints[JointType.ShoulderLeft].Position.Z);
-                SendMessage(user, 7, s.Joints[JointType.ElbowLeft].Position.X, s.Joints[JointType.ElbowLeft].Position.Y, s.Joints[JointType.ElbowLeft].Position.Z);
-                SendMessage(user, 8, s.Joints[JointType.WristLeft].Position.X, s.Joints[JointType.WristLeft].Position.Y, s.Joints[JointType.WristLeft].Position.Z);
-                SendMessage(user, 9, s.Joints[JointType.HandLeft].Position.X, s.Joints[JointType.HandLeft].Position.Y, s.Joints[JointType.HandLeft].Position.Z);
-                // SendMessage(user, 10, s.Joints[JointType.].Position.X, s.Joints[JointType.].Position.Y, s.Joints[JointType.].Position.Z);
-                // SendMessage(user, 11, s.Joints[JointType.].Position.X, s.Joints[JointType.].Position.Y, s.Joints[JointType.].Position.Z);
-                SendMessage(user, 12, s.Joints[JointType.ShoulderRight].Position.X, s.Joints[JointType.ShoulderRight].Position.Y, s.Joints[JointType.ShoulderRight].Position.Z);
-                SendMessage(user, 13, s.Joints[JointType.ElbowRight].Position.X, s.Joints[JointType.ElbowRight].Position.Y, s.Joints[JointType.ElbowRight].Position.Z);
-                SendMessage(user, 14, s.Joints[JointType.WristRight].Position.X, s.Joints[JointType.WristRight].Position.Y, s.Joints[JointType.WristRight].Position.Z);
-                SendMessage(user, 15, s.Joints[JointType.HandRight].Position.X, s.Joints[JointType.HandRight].Position.Y, s.Joints[JointType.HandRight].Position.Z);
-                // SendMessage(user, 16, s.Joints[JointType.].Position.X, s.Joints[JointType.].Position.Y, s.Joints[JointType.].Position.Z);
-                SendMessage(user, 17, s.Joints[JointType.HipLeft].Position.X, s.Joints[JointType.HipLeft].Position.Y, s.Joints[JointType.HipLeft].Position.Z);
-                SendMessage(user, 18, s.Joints[JointType.KneeLeft].Position.X, s.Joints[JointType.KneeLeft].Position.Y, s.Joints[JointType.KneeLeft].Position.Z);
-                SendMessage(user, 19, s.Joints[JointType.AnkleLeft].Position.X, s.Joints[JointType.AnkleLeft].Position.Y, s.Joints[JointType.AnkleLeft].Position.Z);
-                SendMessage(user, 20, s.Joints[JointType.FootLeft].Position.X, s.Joints[JointType.FootLeft].Position.Y, s.Joints[JointType.FootLeft].Position.Z);
-                SendMessage(user, 21, s.Joints[JointType.HipRight].Position.X, s.Joints[JointType.HipRight].Position.Y, s.Joints[JointType.HipRight].Position.Z);
-                SendMessage(user, 22, s.Joints[JointType.KneeRight].Position.X, s.Joints[JointType.KneeRight].Position.Y, s.Joints[JointType.KneeRight].Position.Z);
-                SendMessage(user, 23, s.Joints[JointType.AnkleRight].Position.X, s.Joints[JointType.AnkleRight].Position.Y, s.Joints[JointType.AnkleRight].Position.Z);
-                SendMessage(user, 24, s.Joints[JointType.FootRight].Position.X, s.Joints[JointType.FootRight].Position.Y, s.Joints[JointType.FootRight].Position.Z);
+                SendJointInformation(user, 1, s.Joints[JointType.Head], s.BoneOrientations[JointType.Head]);
+                SendJointInformation(user, 2, s.Joints[JointType.ShoulderCenter], s.BoneOrientations[JointType.ShoulderCenter]);
+                SendJointInformation(user, 3, s.Joints[JointType.Spine], s.BoneOrientations[JointType.Spine]);
+                SendJointInformation(user, 4, s.Joints[JointType.HipCenter], s.BoneOrientations[JointType.HipCenter]);
+                // SendJointInformation(user, 5, s.Joints[JointType.], s.BoneOrientations[JointType.]);
+                SendJointInformation(user, 6, s.Joints[JointType.ShoulderLeft], s.BoneOrientations[JointType.ShoulderLeft]);
+                SendJointInformation(user, 7, s.Joints[JointType.ElbowLeft], s.BoneOrientations[JointType.ElbowLeft]);
+                SendJointInformation(user, 8, s.Joints[JointType.WristLeft], s.BoneOrientations[JointType.WristLeft]);
+                SendJointInformation(user, 9, s.Joints[JointType.HandLeft], s.BoneOrientations[JointType.HandLeft]);
+                // SendJointInformation(user, 10, s.Joints[JointType.], s.BoneOrientations[JointType.]);
+                // SendJointInformation(user, 11, s.Joints[JointType.], s.BoneOrientations[JointType.]);
+                SendJointInformation(user, 12, s.Joints[JointType.ShoulderRight], s.BoneOrientations[JointType.ShoulderRight]);
+                SendJointInformation(user, 13, s.Joints[JointType.ElbowRight], s.BoneOrientations[JointType.ElbowRight]);
+                SendJointInformation(user, 14, s.Joints[JointType.WristRight], s.BoneOrientations[JointType.WristRight]);
+                SendJointInformation(user, 15, s.Joints[JointType.HandRight], s.BoneOrientations[JointType.HandRight]);
+                // SendJointInformation(user, 16, s.Joints[JointType.], s.BoneOrientations[JointType.]);
+                SendJointInformation(user, 17, s.Joints[JointType.HipLeft], s.BoneOrientations[JointType.HipLeft]);
+                SendJointInformation(user, 18, s.Joints[JointType.KneeLeft], s.BoneOrientations[JointType.KneeLeft]);
+                SendJointInformation(user, 19, s.Joints[JointType.AnkleLeft], s.BoneOrientations[JointType.AnkleLeft]);
+                SendJointInformation(user, 20, s.Joints[JointType.FootLeft], s.BoneOrientations[JointType.FootLeft]);
+                SendJointInformation(user, 21, s.Joints[JointType.HipRight], s.BoneOrientations[JointType.HipRight]);
+                SendJointInformation(user, 22, s.Joints[JointType.KneeRight], s.BoneOrientations[JointType.KneeRight]);
+                SendJointInformation(user, 23, s.Joints[JointType.AnkleRight], s.BoneOrientations[JointType.AnkleRight]);
+                SendJointInformation(user, 24, s.Joints[JointType.FootRight], s.BoneOrientations[JointType.FootRight]);
             }
         }
 
-        void SendMessage(int user, int joint, double x, double y, double z)
+        void SendJointInformation(int user, int joint, Joint j, BoneOrientation bo)
+        {
+            SendMessage(user, joint,
+                j.Position.X, j.Position.Y, j.Position.Z,
+                bo.HierarchicalRotation.Quaternion.W, bo.HierarchicalRotation.Quaternion.X,
+                bo.HierarchicalRotation.Quaternion.Y, bo.HierarchicalRotation.Quaternion.Z);
+        }
+
+        void SendMessage(int user, int joint, double x, double y, double z, double ow, double ox, double oy, double oz)
         {
             if (osc != null)
             {
