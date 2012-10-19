@@ -55,7 +55,7 @@ namespace SkeletalTracking
         private bool allUsers = true;
         private bool fullBody = true;
         private bool capturing = true;
-        private bool writeOSC = false;
+        private bool writeOSC = true;
         private bool writeFile = true;
         private bool voiceRecognition = false;
 
@@ -96,10 +96,10 @@ namespace SkeletalTracking
 
             var parameters = new TransformSmoothParameters
             {
-                Smoothing = 0.02f,
+                Smoothing = 0.1f,
                 Correction = 0.1f,
                 Prediction = 0.1f,
-                JitterRadius = 0.05f,
+                JitterRadius = 0.01f,
                 MaxDeviationRadius = 0.04f
             };
 
