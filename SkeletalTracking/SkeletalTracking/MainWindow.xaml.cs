@@ -218,20 +218,29 @@ namespace SkeletalTracking
             }
         }
 
+        double JointToConfidenceValue(Joint j)
+        {
+            if (j.TrackingState == JointTrackingState.Tracked) return 1;
+            if (j.TrackingState == JointTrackingState.Inferred) return 0.5;
+            if (j.TrackingState == JointTrackingState.NotTracked) return 0.1;
+            return 0.5;
+        }
+
         void SendJointInformation(int user, int joint, Joint j, BoneOrientation bo)
         {
             SendMessage(user, joint,
                 j.Position.X, j.Position.Y, j.Position.Z,
                 bo.HierarchicalRotation.Quaternion.W, bo.HierarchicalRotation.Quaternion.X,
-                bo.HierarchicalRotation.Quaternion.Y, bo.HierarchicalRotation.Quaternion.Z);
+                bo.HierarchicalRotation.Quaternion.Y, bo.HierarchicalRotation.Quaternion.Z,
+                JointToConfidenceValue(j));
         }
 
-        void SendMessage(int user, int joint, double x, double y, double z, double ow, double ox, double oy, double oz)
+        void SendMessage(int user, int joint, double x, double y, double z, double ow, double ox, double oy, double oz, double confidence)
         {
             if (osc != null)
             {
                 Status.Content = -y * pointScale;
-                osc.Send(new OscElement("/joint", oscMapping[joint], user, (int)(x * pointScale), (int)(-y * pointScale), (int)(z * pointScale)));
+                osc.Send(new OscElement("/joint", oscMapping[joint], user, (float)(x * pointScale), (float)(-y * pointScale), (float)(z * pointScale), (float)confidence));
             }
             if (fileWriter != null)
             {
@@ -240,6 +249,7 @@ namespace SkeletalTracking
                     (x * pointScale).ToString().Replace(",", ".") + "," +
                     (-y * pointScale).ToString().Replace(",", ".") + "," +
                     (z * pointScale).ToString().Replace(",", ".") + "," +
+                    confidence.ToString().Replace(",", ".") + "," +
                     stopwatch.ElapsedMilliseconds.ToString().Replace(",", "."));
             }
         }
