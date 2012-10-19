@@ -21,7 +21,7 @@
     <Install>true</Install>
     <InstallFrom>Web</InstallFrom>
     <UpdateEnabled>true</UpdateEnabled>
-    <UpdateMode>Foreground</UpdateMode>
+    <UpdateMode>Background</UpdateMode>
     <UpdateInterval>7</UpdateInterval>
     <UpdateIntervalUnits>Days</UpdateIntervalUnits>
     <UpdatePeriodically>false</UpdatePeriodically>
@@ -29,7 +29,13 @@
     <MapFileExtensions>true</MapFileExtensions>
     <InstallUrl>http://www.midasgestures.net/private/osceleton-kinectsdk/</InstallUrl>
     <UpdateUrl>http://www.midasgestures.net/private/osceleton-kinectsdk/</UpdateUrl>
-    <ApplicationRevision>5</ApplicationRevision>
+    <SupportUrl>http://www.midasgestures.net</SupportUrl>
+    <TargetCulture>en</TargetCulture>
+    <ProductName>OSCeleton-KinectSDK</ProductName>
+    <PublisherName>lhoste</PublisherName>
+    <SuiteName>OSCeleton-KinectSDK</SuiteName>
+    <OpenBrowserOnPublish>false</OpenBrowserOnPublish>
+    <ApplicationRevision>8</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
