@@ -204,6 +204,16 @@
   <ItemGroup>
     <Resource Include="midas-m-logo.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\..\Dependencies\FaceTrackData.dll">
+      <Link>FaceTrackData.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\Dependencies\FaceTrackLib.dll">
+      <Link>FaceTrackLib.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
