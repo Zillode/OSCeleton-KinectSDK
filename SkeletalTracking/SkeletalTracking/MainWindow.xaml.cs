@@ -368,7 +368,7 @@ namespace SkeletalTracking
             if (osc != null)
             {
                 Status.Content = -y * pointScale;
-                osc.Send(new OscElement("/Joint", oscMapping[joint], user, (float)(x * pointScale), (float)(-y * pointScale), (float)(z * pointScale), (float)confidence, time));
+                osc.Send(new OscElement("/joint", oscMapping[joint], user, (float)(x * pointScale), (float)(-y * pointScale), (float)(z * pointScale), (float)confidence, time));
             }
             if (fileWriter != null)
             {
@@ -387,7 +387,7 @@ namespace SkeletalTracking
             if (osc != null)
             {
                 osc.Send(new OscElement(
-                    "/Face",
+                    "/face",
                     user,
                     (float)(x * pointScale), (float)(-y * pointScale), (float)(z * pointScale),
                     rotationX, rotationY, rotationZ,
@@ -412,7 +412,7 @@ namespace SkeletalTracking
             if (osc != null)
             {
                 osc.Send(new OscElement(
-                    "/FaceAnimation",
+                    "/face_animation",
                     user,
                     c[AnimationUnit.LipRaiser],
                     c[AnimationUnit.LipStretcher],
