@@ -1,4 +1,4 @@
-
+*.DS_Store
 /SkeletalTracking/SkeletalTracking/bin/
 /SkeletalTracking/SkeletalTracking/obj/
 /SkeletalTrackingVB/SkeletalTracking/bin/
@@ -12,3 +12,8 @@
 /Dependencies/Coding4Fun.Kinect.Wpf.pdb
 /SkeletalTracking/SkeletalTracking/zillode.pfx
 /SkeletalTracking/SkeletalTracking/publish/
+/Dependencies/Microsoft.Kinect.Toolkit/obj
+/Dependencies/Microsoft.Kinect.Toolkit/bin
+/Dependencies/Microsoft.Kinect.Toolkit.FaceTracking/bin
+/Dependencies/Microsoft.Kinect.Toolkit.FaceTracking/obj
+
