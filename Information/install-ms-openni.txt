@@ -1,0 +1,43 @@
+http://kinect-i.blogspot.be/2012/05/how-to-install-and-use-openni-microsoft.html
+
+
+The good news is that there is a good work done by Tomoto where it is possible to install OpenNI and Microsoft Kinect SDK USB driver in the same machine. This installation enables the use of OpenNI, Microsoft Kinect SDK or both at same time. In other words, you can use calls to both libraries in the same application enabling your app to make features from both frameworks.
+Lets see how to install and run this bridge.
+In my case, I did use the latest version of frameworks. So I will make reference to those versions but maybe you can get success using different version.
+You will need download de packages. You will find 32 and 64 bits of these frameworks but even using a x64 machine (that is my case), I suggest you to install 32-bits package to avoid problems. I have seen some comments that OpenNI 64-bits does not work properly. Any way, go ahead and if you get success installing 64-bits I would be glad if you could share this experience with us.
+
+OpenNI 1.5.4.0
+Download unstable version of OpenNI from http://www.openni.org/Downloads/OpenNIModules.aspx
+Go to Downloads > Open Sources and get unstable from https://github.com/OpenNI/OpenNI/tree/unstable
+NITE 1.5.2.21
+From OpenNI site go to Downloads > OpenNI Modules and download NITE from there. You can select source files or binaries if you prefer no wasting time compiling source files.
+USB Kinect Sensor 0.93
+Go to https://github.com/avin2/SensorKinect and download the latest versin of unstable USB driver
+Microsoft Kinect SDK 1.5 from
+http://www.microsoft.com/en-us/kinectforwindows/develop/developer-downloads.aspx
+OpenNI+MSSDK bridbe
+Go to Tomoto´s website project and download the bridge project
+http://code.google.com/p/kinect-mssdk-openni-bridge/ 
+Note: If you still don't have Python in your machine, go to http://sourceforge.net/projects/pywin32/files/pywin32/ and download the Python package to your machine.
+Now, lets install the packages.
+Before we start, it is recommended to uninstall older version of OpenNI/NITE and USB driver.
+Unplug Kinect device from USB port
+Install OpenNI and NITE.
+Install the OpenNI USB driver
+Plug Kinect device to USB port
+In another blog, I already showed what you will get from Device Manager view when plug Kinect to usb port
+Test if you OpenNI installation is ok running a sample app like NiUserTracker or any other.
+Unplug Kienct device from USB port
+Install Kinect for Windows SDK. During installation I noticed that Microsoft installer does not allows change the installation directory. I hate to install app in C drive so I ever try to change to a different drive.
+Needless to say that the installation of Microsoft Kinect SDK is much easier thatn the installation of OpenNI. In the same way, work with MSSDK is also easier thatn work with OpenNI framework.
+Install Kinect Developr Toolkit
+Plug Kinect device to USB port
+You will get something like the figure below in your Device Manager
+
+Note that the node name is PrimeSense but the sub-nodes are from Microsoft.
+
+Go to Tomoto's website and download the bridge package
+Go to your  msdk-openni-bridge directory and run install.bat program. Basically, it will register the bridge that allows you make calls to OpenNI or MS Kinect SDK without the need to install/uninstall the USB driver each time you want to switch from one to another package. 
+Test your final installation. Go to OpenNI and run NiUserTracker and see that you can track your body using OpenNI framework. No go to Microsoft SDK installation directory, go to samples directory and run any sample like depth-d3d facetracking or any other. Voila, it works!
+Now you can work with both frameworks at same time.
+Enjoy!
