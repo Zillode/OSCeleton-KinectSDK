@@ -21,14 +21,12 @@ using Microsoft.Kinect;
 using Microsoft.Kinect.Toolkit.FaceTracking;
 using Coding4Fun.Kinect.Wpf;
 using System.IO;
+using System.Diagnostics;
 // Speech
 using Microsoft.Speech.AudioFormat;
 using Microsoft.Speech.Recognition;
 // OSC
 using Ventuz.OSC;
-using System.Diagnostics;
-// Shortcut
-using ShortcutLib;
 
 namespace SkeletalTracking
 {
@@ -79,7 +77,7 @@ namespace SkeletalTracking
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
 
-            ShortcutLib.ShortcutLib.CheckForShortcut();
+            CheckForShortcut();
             stopwatch = new Stopwatch();
             stopwatch.Reset();
             stopwatch.Start();
@@ -617,6 +615,72 @@ Ensure you have the Microsoft Speech SDK installed and configured.",
                 default:
                     Status.Content = e.Result.Text;
                     break;
+            }
+        }
+
+        private string GetErrorText(Exception ex)
+        {
+            string err = ex.Message;
+            if (ex.InnerException != null)
+            {
+                err += " - More details: " + ex.InnerException.Message;
+            }
+            return err;
+        }
+
+        public void CheckForShortcut()
+        {
+            try
+            {
+                if (System.Diagnostics.Debugger.IsAttached)
+                {
+                    return;
+                }
+                System.Deployment.Application.ApplicationDeployment ad = default(System.Deployment.Application.ApplicationDeployment);
+                ad = System.Deployment.Application.ApplicationDeployment.CurrentDeployment;
+
+                if ((ad.IsFirstRun))
+                {
+                    System.Reflection.Assembly code = System.Reflection.Assembly.GetExecutingAssembly();
+                    string company = string.Empty;
+                    string description = string.Empty;
+
+                    if ((Attribute.IsDefined(code, typeof(System.Reflection.AssemblyCompanyAttribute))))
+                    {
+                        System.Reflection.AssemblyCompanyAttribute ascompany = null;
+                        ascompany = (System.Reflection.AssemblyCompanyAttribute)Attribute.GetCustomAttribute(code, typeof(System.Reflection.AssemblyCompanyAttribute));
+                        company = ascompany.Company;
+                    }
+
+                    if ((Attribute.IsDefined(code, typeof(System.Reflection.AssemblyTitleAttribute))))
+                    {
+                        System.Reflection.AssemblyTitleAttribute asdescription = null;
+                        asdescription = (System.Reflection.AssemblyTitleAttribute)Attribute.GetCustomAttribute(code, typeof(System.Reflection.AssemblyTitleAttribute));
+                        description = asdescription.Title;
+
+                    }
+
+                    if ((company != string.Empty & description != string.Empty))
+                    {
+                        //description = Replace(description, "_", " ")
+
+                        string desktopPath = string.Empty;
+                        desktopPath = string.Concat(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "\\", description, ".appref-ms");
+
+                        string shortcutName = string.Empty;
+                        shortcutName = string.Concat(Environment.GetFolderPath(Environment.SpecialFolder.Programs), "\\", company, "\\", description, ".appref-ms");
+
+                        System.IO.File.Copy(shortcutName, desktopPath, true);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Missing company or description: " + company + " - " + description);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(GetErrorText(ex));
             }
         }
 

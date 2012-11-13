@@ -35,7 +35,7 @@
     <PublisherName>lhoste</PublisherName>
     <SuiteName>OSCeleton-KinectSDK</SuiteName>
     <OpenBrowserOnPublish>false</OpenBrowserOnPublish>
-    <ApplicationRevision>14</ApplicationRevision>
+    <ApplicationRevision>18</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -66,13 +66,13 @@
     <StartupObject>SkeletalTracking.App</StartupObject>
   </PropertyGroup>
   <PropertyGroup>
-    <SignManifests>false</SignManifests>
+    <SignManifests>true</SignManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>E1326BB8EA2233567028613A2537CD2C33CFAC03</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>657732FB8C3372813426077A574EF197DDE763FF</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>zillode.pfx</ManifestKeyFile>
+    <ManifestKeyFile>Lode.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateManifests>true</GenerateManifests>
@@ -86,6 +86,12 @@
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>midas-m-logo.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>Lode.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Coding4Fun.Kinect.Wpf, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -110,6 +116,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -163,6 +170,7 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <None Include="app.config" />
+    <None Include="Lode.pfx" />
     <None Include="Properties\app.manifest" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -174,10 +182,6 @@
     <ProjectReference Include="..\..\Dependencies\KinectWpfViewers\Microsoft.Samples.Kinect.WpfViewers.csproj">
       <Project>{4DE23893-27E7-423F-9BB6-BA21DAC2C45E}</Project>
       <Name>Microsoft.Samples.Kinect.WpfViewers</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Dependencies\ShortcutLib\ShortcutLib.vbproj">
-      <Project>{094D1317-234D-4692-9179-78C18448C319}</Project>
-      <Name>ShortcutLib</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
