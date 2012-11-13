@@ -27,7 +27,7 @@ using Microsoft.Speech.Recognition;
 //OSC
 using Ventuz.OSC;
 using System.Diagnostics;
-
+using ShortcutLib;
 
 namespace SkeletalTracking
 {
@@ -77,6 +77,8 @@ namespace SkeletalTracking
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+
+            ShortcutLib.ShortcutLib.CheckForShortcut();
             stopwatch = new Stopwatch();
             stopwatch.Reset();
             stopwatch.Start();

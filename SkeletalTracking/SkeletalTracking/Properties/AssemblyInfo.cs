@@ -8,7 +8,7 @@ using System.Windows;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("OSCeleton-KinectSDK")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("OSCeleton-KinectSDK")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Lode Hoste")]
 [assembly: AssemblyProduct("OSCeleton-KinectSDK")]

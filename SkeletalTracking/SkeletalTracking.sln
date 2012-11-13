@@ -3,6 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SkeletalTracking", "SkeletalTracking\SkeletalTracking.csproj", "{9B080D1C-118F-4734-925C-A59838A43643}"
 	ProjectSection(ProjectDependencies) = postProject
+		{094D1317-234D-4692-9179-78C18448C319} = {094D1317-234D-4692-9179-78C18448C319}
 		{C6F9C31B-6130-4443-A5CC-EF0664552ECD} = {C6F9C31B-6130-4443-A5CC-EF0664552ECD}
 		{4DE23893-27E7-423F-9BB6-BA21DAC2C45E} = {4DE23893-27E7-423F-9BB6-BA21DAC2C45E}
 		{1BCF9CEE-DF01-430E-B49D-41A9A88963EB} = {1BCF9CEE-DF01-430E-B49D-41A9A88963EB}
@@ -13,6 +14,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Kinect.Toolkit", "..\Dependencies\Microsoft.Kinect.Toolkit\Microsoft.Kinect.Toolkit.csproj", "{C6F9C31B-6130-4443-A5CC-EF0664552ECD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Kinect.Toolkit.FaceTracking", "..\Dependencies\Microsoft.Kinect.Toolkit.FaceTracking\Microsoft.Kinect.Toolkit.FaceTracking.csproj", "{1BCF9CEE-DF01-430E-B49D-41A9A88963EB}"
+EndProject
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "ShortcutLib", "..\Dependencies\ShortcutLib\ShortcutLib.vbproj", "{094D1317-234D-4692-9179-78C18448C319}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -92,6 +95,20 @@ Global
 		{1BCF9CEE-DF01-430E-B49D-41A9A88963EB}.Release|x64.Build.0 = Release|x64
 		{1BCF9CEE-DF01-430E-B49D-41A9A88963EB}.Release|x86.ActiveCfg = Release|x86
 		{1BCF9CEE-DF01-430E-B49D-41A9A88963EB}.Release|x86.Build.0 = Release|x86
+		{094D1317-234D-4692-9179-78C18448C319}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{094D1317-234D-4692-9179-78C18448C319}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{094D1317-234D-4692-9179-78C18448C319}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{094D1317-234D-4692-9179-78C18448C319}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{094D1317-234D-4692-9179-78C18448C319}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{094D1317-234D-4692-9179-78C18448C319}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{094D1317-234D-4692-9179-78C18448C319}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{094D1317-234D-4692-9179-78C18448C319}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{094D1317-234D-4692-9179-78C18448C319}.Release|Any CPU.Build.0 = Release|Any CPU
+		{094D1317-234D-4692-9179-78C18448C319}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{094D1317-234D-4692-9179-78C18448C319}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{094D1317-234D-4692-9179-78C18448C319}.Release|Win32.ActiveCfg = Release|Any CPU
+		{094D1317-234D-4692-9179-78C18448C319}.Release|x64.ActiveCfg = Release|Any CPU
+		{094D1317-234D-4692-9179-78C18448C319}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
