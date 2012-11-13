@@ -21,12 +21,13 @@ using Microsoft.Kinect;
 using Microsoft.Kinect.Toolkit.FaceTracking;
 using Coding4Fun.Kinect.Wpf;
 using System.IO;
-//speech
+// Speech
 using Microsoft.Speech.AudioFormat;
 using Microsoft.Speech.Recognition;
-//OSC
+// OSC
 using Ventuz.OSC;
 using System.Diagnostics;
+// Shortcut
 using ShortcutLib;
 
 namespace SkeletalTracking
