@@ -63,7 +63,7 @@ namespace SkeletalTracking
         private bool faceTrackingAnimationUnits = true;
         private bool capturing = true;
         private bool writeOSC = true;
-        private bool writeFile = true;
+        private bool writeCSV = true;
         private bool voiceRecognition = false;
 
         private static List<String> oscMapping = new List<String> { "",
@@ -85,9 +85,9 @@ namespace SkeletalTracking
             {
                 osc = new UdpWriter("127.0.0.1", 7110);
             }
-            if (writeFile)
+            if (writeCSV)
             {
-                fileWriter = new StreamWriter(Environment.GetFolderPath(Environment.SpecialFolder.Personal) + "/" + string.Format("points-{0:yyyy-MM-dd_hh-mm-ss-tt}.csv", DateTime.Now), false);
+                fileWriter = new StreamWriter(Environment.GetFolderPath(Environment.SpecialFolder.Personal) + "/" + string.Format("points-MSK-{0:yyyy-MM-dd_hh-mm-ss-tt}.csv", DateTime.Now), false);
                 fileWriter.WriteLine("Joint, user, joint, x, y, z, confidence, time");
                 fileWriter.WriteLine("Face, user, x, y, z, pitch, yaw, roll, time");
                 fileWriter.WriteLine("FaceAnimation, face, lip_raise, lip_stretcher, lip_corner_depressor, jaw_lower, brow_lower, brow_raise, time");
