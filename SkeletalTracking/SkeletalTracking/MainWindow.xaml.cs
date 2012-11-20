@@ -88,7 +88,7 @@ namespace SkeletalTracking
             }
             if (writeCSV)
             {
-                fileWriter = new StreamWriter(Environment.GetFolderPath(Environment.SpecialFolder.Personal) + "/" + string.Format("points-MSK-{0:yyyy-MM-dd_hh-mm-ss-tt}.csv", DateTime.Now), false);
+                fileWriter = new StreamWriter(Environment.GetFolderPath(Environment.SpecialFolder.Personal) + "/points-MSK-" + getUnixEpochTime().ToString().Replace(",",".") + ".csv", false);
                 fileWriter.WriteLine("Joint, user, joint, x, y, z, confidence, time");
                 fileWriter.WriteLine("Face, user, x, y, z, pitch, yaw, roll, time");
                 fileWriter.WriteLine("FaceAnimation, face, lip_raise, lip_stretcher, lip_corner_depressor, jaw_lower, brow_lower, brow_raise, time");
