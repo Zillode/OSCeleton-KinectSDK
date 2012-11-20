@@ -64,6 +64,7 @@ namespace SkeletalTracking
         private bool capturing = true;
         private bool writeOSC = true;
         private bool writeCSV = true;
+        private bool useUnixEpochTime = true;
         private bool voiceRecognition = false;
 
         private static List<String> oscMapping = new List<String> { "",
@@ -175,6 +176,18 @@ namespace SkeletalTracking
             Status.Content = "Listening...";
             this.readyTimer.Stop();
             this.readyTimer = null;
+        }
+
+        private double getUnixEpochTime()
+        {
+            var unixTime = DateTime.Now.ToUniversalTime() - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            return unixTime.TotalMilliseconds;
+        }
+
+        private long getUnixEpochTimeLong()
+        {
+            var unixTime = DateTime.Now.ToUniversalTime() - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            return System.Convert.ToInt64(unixTime.TotalMilliseconds);
         }
 
         void sensor_AllFramesReady(object sender, AllFramesReadyEventArgs e)
@@ -301,12 +314,12 @@ namespace SkeletalTracking
                 {
                     SendFacePoseMessage(user,
                         s.Joints[JointType.Head].Position.X, s.Joints[JointType.Head].Position.Y, s.Joints[JointType.Head].Position.Z,
-                        faceFrame.Rotation.X, faceFrame.Rotation.Y, faceFrame.Rotation.Z, stopwatch.ElapsedMilliseconds);
+                        faceFrame.Rotation.X, faceFrame.Rotation.Y, faceFrame.Rotation.Z, useUnixEpochTime ? getUnixEpochTime() : stopwatch.ElapsedMilliseconds);
                 }
 
                 if (faceTrackingAnimationUnits)
                 {
-                    SendFaceAnimationMessage(user, faceFrame.GetAnimationUnitCoefficients(), stopwatch.ElapsedMilliseconds);
+                    SendFaceAnimationMessage(user, faceFrame.GetAnimationUnitCoefficients(), useUnixEpochTime ? getUnixEpochTime() : stopwatch.ElapsedMilliseconds);
                 }
             }
         }
