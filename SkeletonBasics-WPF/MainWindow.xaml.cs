@@ -29,7 +29,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         private bool allUsers = true;
         private bool fullBody = true;
         private bool speechRecognition = false;
-        private bool faceTracking = true;
+        private bool faceTracking = false;
         private bool faceTracking2DMesh = false;
         private bool faceTrackingHeadPose = true;
         private bool faceTrackingAnimationUnits = true;
@@ -274,6 +274,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     StartKinect(e.Sensor);
                     break;
                 case KinectStatus.NotReady:
+                case KinectStatus.Initializing:
                     break;
                 default:
                     System.Windows.MessageBox.Show("Kinect warning: " + e.Status);
@@ -315,7 +316,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 this.sensor.SkeletonStream.Enable(parameters);
                 colorPixelData = new byte[this.sensor.ColorStream.FramePixelDataLength];
                 depthPixelData = new short[this.sensor.DepthStream.FramePixelDataLength];
-                //FaceTracker f = new FaceTracker(sensor);
                 sensor.AllFramesReady += SensorAllFramesReady;
             }
             else
@@ -389,6 +389,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             SkeletonFrame skeletonFrame = e.OpenSkeletonFrame();
             if (skeletonFrame == null) return;
             skeletonFrame.CopySkeletonDataTo(skeletons);
+            skeletonFrame = null;
             SensorFrameHelper(false);
         }
             
@@ -406,12 +407,15 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             ColorImageFrame colorFrame = e.OpenColorImageFrame();
             if (colorFrame == null) return;
             colorFrame.CopyPixelDataTo(colorPixelData);
+            colorFrame = null;
             DepthImageFrame depthFrame = e.OpenDepthImageFrame();
             if (depthFrame == null) return;
             depthFrame.CopyPixelDataTo(depthPixelData);
+            depthFrame = null;
             SkeletonFrame skeletonFrame = e.OpenSkeletonFrame();
             if (skeletonFrame == null) return;
             skeletonFrame.CopySkeletonDataTo(skeletons);
+            skeletonFrame = null;
             SensorFrameHelper(true);
         }
         
