@@ -5,18 +5,21 @@ What is this?
 -------------
 
 As the title says, it's just a small program that takes kinect
-skeleton data from the KinectSDK (v1.6) framework and spits out the coordinates
+skeleton data from the KinectSDK (v1.7) framework and spits out the coordinates
 of the skeleton's joints via OSC messages. These can can then be used
 on your language / framework of choice.
 
-Note: this version of OSCeleton is compatible with the OSCeleton-OpenNI version (Zillode/OSCeleton-OpenNI).
+This version of OSCeleton is compatible with the OSCeleton-OpenNI version (Zillode/OSCeleton-OpenNI).
+
+Note: this version is incompatible with Sensebloom/OSCeleton!
 
 How do I use it?
 ----------------
 
-### Install the KinectSDK and VS2010
-
-### Compile and run the SkeletalTracking solution
+### Install Visual Studio 2012
+### Install Microsoft Kinect SDK (version 1.7): http://www.microsoft.com/en-us/kinectforwindows/develop/developer-downloads.aspx
+### Install Microsoft Speech Platform SDK (version 11): http://www.microsoft.com/en-us/download/details.aspx?id=27226
+### Compile and run the SkeletonBasics solution
 
 If you run the executable, it will send the OSC
 messages in the Midas format to localhost on port 7110.
