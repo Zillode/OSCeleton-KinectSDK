@@ -17,8 +17,8 @@ How do I use it?
 ----------------
 
 ### Install Visual Studio 2012
-### Install Microsoft Kinect SDK (version 1.7): http://www.microsoft.com/en-us/kinectforwindows/develop/developer-downloads.aspx
-### Install Microsoft Speech Platform SDK (version 11): http://www.microsoft.com/en-us/download/details.aspx?id=27226
+### Install [Microsoft Kinect SDK (version 1.7)](http://www.microsoft.com/en-us/kinectforwindows/develop/developer-downloads.aspx)
+### Install [Microsoft Speech Platform SDK (version 11)](http://www.microsoft.com/en-us/download/details.aspx?id=27226)
 ### Compile and run the SkeletonBasics solution
 
 If you run the executable, it will send the OSC
@@ -41,6 +41,8 @@ The messages will have the following format:
     f: Z coordinate of joint in real world coordinates (centimers)
     f: confidence value in interval [0.0, 1.0]
 	d: timestamp in milliseconds since launch
+
+Note: the Y coordinate is inverted compared to the default KinectSDK to be compatible with OpenNI.
 
 ### Face message - message with the coordinates of a face event:
 The messages will have the following format:
@@ -105,8 +107,7 @@ Further information about the AnimationUnit properties can be found [here](http:
 Other
 -----
 ### For feature request, reporting bugs, or general OSCeleton 
-discussion, come join the fun in our [google 
-group](http://groups.google.com/group/osceleton)!
+discussion, come join the fun in a related [google group](http://groups.google.com/group/osceleton)!
 
 ### OSCeleton-OpenNI ?
 To use the OpenNI & NITE framework in combination with OSC messages, download [OSCeleton-OpenNI](https://github.com/Zillode/OSCeleton-OpenNI)
