@@ -40,12 +40,13 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         private int oscPort = 7110;
         private const int skeletonCount = 6;
         private const int pointScale = 1000;
+        private bool showSkeleton = true;
 
         // Outputs
+        private bool capturing = true;
         private UdpWriter osc;
         private StreamWriter fileWriter;
         private Stopwatch stopwatch;
-        private bool capturing = true;
         private static List<String> oscMapping = new List<String> { "",
             "head", "neck", "torso", "waist",
             "l_collar", "l_shoulder", "l_elbow", "l_wrist", "l_hand", "l_fingertip",
@@ -215,6 +216,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         System.Windows.MessageBox.Show("Failed to parse the oscPort argument: " + args[index + 1]);
                     }
                 }
+                if ("showSkeleton".ToLower().Equals(args[index])) showSkeleton = StringToBool(args[index + 1]);
             }
             
             // Initialisation
@@ -420,39 +422,51 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         }
         
         private void SensorFrameHelper(Boolean allFrames) {
-            
-            using (DrawingContext dc = this.drawingGroup.Open())
+            if (capturing)
             {
-                // Draw a transparent background to set the render size
-                dc.DrawRectangle(Brushes.Black, null, new System.Windows.Rect(0.0, 0.0, RenderWidth, RenderHeight));
-
-                if (skeletons.Length != 0)
+                foreach (Skeleton skel in skeletons)
                 {
-                    foreach (Skeleton skel in skeletons)
+                    if (skel.TrackingState == SkeletonTrackingState.Tracked)
                     {
-                        RenderClippedEdges(skel, dc);
-
-                        if (skel.TrackingState == SkeletonTrackingState.Tracked)
-                        {
-                            this.DrawBonesAndJoints(skel, dc);
-                            SendSkeleton(skel.TrackingId, skel);
-                            if (allFrames)
-                                SendFaceTracking(skel.TrackingId, skel);
-                        }
-                        else if (skel.TrackingState == SkeletonTrackingState.PositionOnly)
-                        {
-                            dc.DrawEllipse(
-                            this.centerPointBrush,
-                            null,
-                            this.SkeletonPointToScreen(skel.Position),
-                            BodyCenterThickness,
-                            BodyCenterThickness);
-                        }
+                        SendSkeleton(skel.TrackingId, skel);
+                        if (allFrames && faceTracking)
+                            SendFaceTracking(skel.TrackingId, skel);
                     }
                 }
+            }
 
-                // prevent drawing outside of our render area
-                this.drawingGroup.ClipGeometry = new RectangleGeometry(new System.Windows.Rect(0.0, 0.0, RenderWidth, RenderHeight));
+            if (showSkeleton)
+            {
+                using (DrawingContext dc = this.drawingGroup.Open())
+                {
+                    // Draw a transparent background to set the render size
+                    dc.DrawRectangle(Brushes.Black, null, new System.Windows.Rect(0.0, 0.0, RenderWidth, RenderHeight));
+
+                    if (skeletons.Length != 0)
+                    {
+                        foreach (Skeleton skel in skeletons)
+                        {
+                            RenderClippedEdges(skel, dc);
+
+                            if (skel.TrackingState == SkeletonTrackingState.Tracked)
+                            {
+                                this.DrawBonesAndJoints(skel, dc);
+                            }
+                            else if (skel.TrackingState == SkeletonTrackingState.PositionOnly)
+                            {
+                                dc.DrawEllipse(
+                                    this.centerPointBrush,
+                                    null,
+                                    this.SkeletonPointToScreen(skel.Position),
+                                BodyCenterThickness,
+                                BodyCenterThickness);
+                            }
+                        }
+                    }
+
+                    // prevent drawing outside of our render area
+                    this.drawingGroup.ClipGeometry = new RectangleGeometry(new System.Windows.Rect(0.0, 0.0, RenderWidth, RenderHeight));
+                }
             }
         }
 
@@ -624,6 +638,17 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 }
             }
         }
+
+        /// <summary>
+        /// Handles the checking or unchecking of the seated mode combo box
+        /// </summary>
+        /// <param name="sender">object sending the event</param>
+        /// <param name="e">event arguments</param>
+        private void CheckBoxShowSkeletonChanged(object sender, System.Windows.RoutedEventArgs e)
+        {
+            this.showSkeleton = this.checkBoxShowSkeleton.IsChecked.GetValueOrDefault();
+        }
+
 
         void SendFaceTracking(int user, Skeleton s)
         {
