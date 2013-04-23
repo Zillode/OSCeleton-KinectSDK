@@ -3,8 +3,8 @@
   <PropertyGroup>
     <PublishUrlHistory>publish\</PublishUrlHistory>
     <InstallUrlHistory>http://www.midasgestures.net/private/osceleton-kinectsdk/</InstallUrlHistory>
-    <SupportUrlHistory />
-    <UpdateUrlHistory />
+    <SupportUrlHistory>http://www.midasgestures.net</SupportUrlHistory>
+    <UpdateUrlHistory>http://www.midasgestures.net/private/osceleton-kinectsdk/</UpdateUrlHistory>
     <BootstrapperUrlHistory />
     <ErrorReportUrlHistory />
     <FallbackCulture>en-US</FallbackCulture>

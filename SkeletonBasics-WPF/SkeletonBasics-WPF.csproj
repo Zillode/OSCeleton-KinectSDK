@@ -32,10 +32,10 @@
     <TargetCulture>en</TargetCulture>
     <ProductName>OSCeleton-KinectSDK</ProductName>
     <PublisherName>lhoste</PublisherName>
-    <SuiteName>OSCeleton-KinectSDK</SuiteName>
-    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationRevision>22</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
+    <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
@@ -73,7 +73,7 @@
     <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
   </PropertyGroup>
   <PropertyGroup>
-    <SignManifests>false</SignManifests>
+    <SignManifests>true</SignManifests>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestCertificateThumbprint>E1326BB8EA2233567028613A2537CD2C33CFAC03</ManifestCertificateThumbprint>

@@ -51,6 +51,6 @@ using System.Windows;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: NeutralResourcesLanguage("en-US")]
 [assembly: CLSCompliant(true)]
-[assembly: AssemblyCompanyAttribute("Lode Hoste")]
+[assembly: AssemblyCompanyAttribute("lhoste")]
 [assembly: AssemblyProductAttribute("OSCeleton-KinectSDK")]
 [assembly: AssemblyCopyrightAttribute("Copyright © Lode Hoste 2013")]
