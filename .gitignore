@@ -6,3 +6,5 @@
 /SkeletonBasics-WPF/Libs/Microsoft.Kinect.Toolkit.FaceTracking/bin
 
 /SkeletonBasics-WPF/*.suo
+/SkeletonBasics-WPF/*.psess
+/SkeletonBasics-WPF/*.vsp
