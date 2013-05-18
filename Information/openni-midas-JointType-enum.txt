@@ -1,0 +1,28 @@
+#define SKELETON_HEAD             1
+#define SKELETON_NECK             2
+#define SKELETON_TORSO            3
+#define SKELETON_WAIST            4
+
+#define SKELETON_COLLAR_LEFT      5
+#define SKELETON_SHOULDER_LEFT    6
+#define SKELETON_ELBOW_LEFT       7
+#define SKELETON_WRIST_LEFT       8
+#define SKELETON_HAND_LEFT        9
+#define SKELETON_FINGERTIP_LEFT  10
+
+#define SKELETON_COLLAR_RIGHT    11
+#define SKELETON_SHOULDER_RIGHT  12
+#define SKELETON_ELBOW_RIGHT     13
+#define SKELETON_WRIST_RIGHT     14
+#define SKELETON_HAND_RIGHT     15
+#define SKELETON_FINGERTIP_RIGHT 16
+
+#define SKELETON_HIP_LEFT        17
+#define SKELETON_KNEE_LEFT       18
+#define SKELETON_ANKLE_LEFT      19
+#define SKELETON_FOOT_LEFT       20
+
+#define SKELETON_HIP_RIGHT       21
+#define SKELETON_KNEE_RIGHT      22
+#define SKELETON_ANKLE_RIGHT     23
+#define SKELETON_FOOT_RIGHT      24 

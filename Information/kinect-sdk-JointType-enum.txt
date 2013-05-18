@@ -1,0 +1,102 @@
+public enum JointType
+    {
+        // Summary:
+        //     The center of the hip.
+		// Midas => 4
+        HipCenter = 0,
+        //
+        // Summary:
+        //     The bottom of the spine.
+		// Midas => 3
+        Spine = 1,
+        //
+        // Summary:
+        //     The center of the shoulders.
+		// Midas => 2
+        ShoulderCenter = 2,
+        //
+        // Summary:
+        //     The players head.
+		// Midas => 1
+        Head = 3,
+        //
+        // Summary:
+        //     The left shoulder.
+		// Midas => 6
+        ShoulderLeft = 4,
+        //
+        // Summary:
+        //     The left elbow.
+		// Midas => 7
+        ElbowLeft = 5,
+        //
+        // Summary:
+        //     The left wrist.
+		// Midas => 8
+        WristLeft = 6,
+        //
+        // Summary:
+        //     The left hand.
+		// Midas => 9
+        HandLeft = 7,
+        //
+        // Summary:
+        //     The right shoulder.
+		// Midas => 12
+        ShoulderRight = 8,
+        //
+        // Summary:
+        //     The right elbow.
+		// Midas => 13
+        ElbowRight = 9,
+        //
+        // Summary:
+        //     The right wrist.
+		// Midas => 14
+        WristRight = 10,
+        //
+        // Summary:
+        //     The right hand.
+		// Midas => 15
+        HandRight = 11,
+        //
+        // Summary:
+        //     The left hip.
+		// Midas => 17
+        HipLeft = 12,
+        //
+        // Summary:
+        //     The left knee.
+		// Midas => 18
+        KneeLeft = 13,
+        //
+        // Summary:
+        //     The left ankle.
+		// Midas => 19
+        AnkleLeft = 14,
+        //
+        // Summary:
+        //     The left foot.
+		// Midas => 20
+        FootLeft = 15,
+        //
+        // Summary:
+        //     The right hip.
+		// Midas => 21
+        HipRight = 16,
+        //
+        // Summary:
+        //     The right knee.
+		// Midas => 22
+        KneeRight = 17,
+        //
+        // Summary:
+        //     The right ankle.
+		// Midas => 23
+        AnkleRight = 18,
+        //
+        // Summary:
+        //     The right foot.
+		// Midas => 24
+        FootRight = 19,
+    }
