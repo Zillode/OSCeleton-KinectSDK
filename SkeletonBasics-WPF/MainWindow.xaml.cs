@@ -18,6 +18,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
     using Microsoft.Speech.AudioFormat;
     using Microsoft.Speech.Recognition;
     using System.Linq;
+    using System.Windows.Media.Animation;
+    using System.Windows;
+    using System.Threading;
 
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -28,7 +31,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         // Settings
         private bool allUsers = true;
         private bool fullBody = true;
-        private bool speechRecognition = false;
         private bool faceTracking = false;
         private bool faceTracking2DMesh = false;
         private bool faceTrackingHeadPose = true;
@@ -40,7 +42,10 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         private int oscPort = 7110;
         private const int skeletonCount = 6;
         private const int pointScale = 1000;
+
+        // Options
         private bool showSkeleton = true;
+        private bool speechCommands = true;
 
         // Outputs
         private bool capturing = true;
@@ -230,11 +235,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             }
             if (writeCSV)
             {
-                fileWriter = new StreamWriter(Environment.GetFolderPath(Environment.SpecialFolder.Personal) + "/points-MSK-" + getUnixEpochTime().ToString().Replace(",", ".") + ".csv", false);
-                fileWriter.WriteLine("Joint, user, joint, x, y, z, confidence, time");
-                fileWriter.WriteLine("Face, user, x, y, z, pitch, yaw, roll, time");
-                fileWriter.WriteLine("FaceAnimation, face, lip_raise, lip_stretcher, lip_corner_depressor, jaw_lower, brow_lower, brow_raise, time");
-
+                OpenNewCSVFile();
             }
 
             
@@ -247,8 +248,11 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             // Display the drawing using our image control
             Image.Source = this.imageSource;
 
+            this.checkBoxSeatedMode.IsEnabled = false;
+            this.checkBoxShowSkeleton.IsChecked = showSkeleton;
+            this.checkBoxSpeechCommands.IsChecked = speechCommands;
 
-           foreach (var potentialSensor in KinectSensor.KinectSensors)
+            foreach (var potentialSensor in KinectSensor.KinectSensors)
             {
                 if (potentialSensor.Status == KinectStatus.Connected)
                 {
@@ -270,7 +274,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             switch (e.Status)
             {
                 case KinectStatus.Disconnected:
-                    StopKinect(this.sensor);
+                    StopKinect();
                     break;
                 case KinectStatus.Connected:
                     StartKinect(e.Sensor);
@@ -332,11 +336,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 sensor.SkeletonFrameReady += SensorSkeletonFrameReady;
             }
 
-            if (speechRecognition)
-            {
-                CreateSpeechRecognizer();
-            }
-
             try
             {
                 sensor.Start();
@@ -344,18 +343,28 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             catch (System.IO.IOException)
             {
                 System.Windows.MessageBox.Show("Failed to start the Kinect Sensor");
+                return;
             }
+
+            if (checkBoxSpeechCommands.IsChecked.Value)
+            {
+                CreateSpeechRecognizer();
+            }
+            SetStatusbarText("Kinect started");
         }
 
-        private void StopKinect(KinectSensor sensor)
+        private void StopKinect()
         {
             if (this.sensor != null)
             {
                 if (this.sensor.IsRunning)
                 {
+                    SetStatusbarText("Kinect stopped", Colors.Red);
+                    CloseCSVFile();
                     this.sensor.ColorStream.Disable();
                     this.sensor.DepthStream.Disable();
                     this.sensor.SkeletonStream.Disable();
+                    StopSpeechRecognizer();
                     if (this.sensor.AudioSource != null)
                     {
                         this.sensor.AudioSource.Stop();
@@ -374,7 +383,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         private void WindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             shuttingDown = true;
-            StopKinect(this.sensor);
+            StopKinect();
         }
 
         /// <summary>
@@ -481,6 +490,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             this.speechEngine = new SpeechRecognitionEngine(ri.Id);
             var words = new Choices();
             words.Add("start");
+            words.Add("next");
+            words.Add("continue");
+            words.Add("pause");
             words.Add("stop");
             var gb = new GrammarBuilder();
             gb.Culture = ri.Culture;
@@ -495,6 +507,15 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             this.speechEngine.RecognizeAsync(RecognizeMode.Multiple);
         }
 
+        private void StopSpeechRecognizer()
+        {
+            if (this.speechEngine != null)
+            {
+                ThreadPool.QueueUserWorkItem((object x) => (x as IDisposable).Dispose(), this.speechEngine);
+                this.speechEngine = null;
+            }
+        }
+
         private void SpeechRecognized(object sender, SpeechRecognizedEventArgs e)
         {
             if (e.Result.Confidence < 0.05)
@@ -505,12 +526,71 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             switch (e.Result.Text.ToUpper())
             {
                 case "START":
+                    foreach (var potentialSensor in KinectSensor.KinectSensors)
+                    {
+                        if (potentialSensor.Status == KinectStatus.Connected)
+                        {
+                            StartKinect(potentialSensor);
+                            break;
+                        }
+                    }
+                    break;
+                case "NEXT":
+                    if (writeCSV)
+                    {
+                        capturing = true;
+                        OpenNewCSVFile();
+                    }
+                    break;
+                case "CONTINUE":
                     capturing = true;
+                    SetStatusbarText("Continue capturing", Colors.Green);
+                    break;
+                case "PAUSE":
+                    capturing = false;
+                    SetStatusbarText("Paused capturing", Colors.Red);
                     break;
                 case "STOP":
-                    capturing = false;
+                    StopKinect();
+                    SetStatusbarText("Kinect stopped", Colors.Red);
                     break;
             }
+        }
+
+        private void OpenNewCSVFile()
+        {
+            CloseCSVFile();
+            fileWriter = new StreamWriter(Environment.GetFolderPath(Environment.SpecialFolder.Personal) + "/points-MSK-" + getUnixEpochTime().ToString().Replace(",", ".") + ".csv", false);
+            fileWriter.WriteLine("Joint, user, joint, x, y, z, confidence, time");
+            fileWriter.WriteLine("Face, user, x, y, z, pitch, yaw, roll, time");
+            fileWriter.WriteLine("FaceAnimation, face, lip_raise, lip_stretcher, lip_corner_depressor, jaw_lower, brow_lower, brow_raise, time");
+            SetStatusbarText( "Writing to file " + DateTime.Now.ToLongTimeString(), Colors.Orange);
+        }
+
+        private void CloseCSVFile()
+        {
+            if (fileWriter != null)
+            {
+                fileWriter.Close();
+                fileWriter = null;
+            }
+        }
+
+        private void SetStatusbarText(string txt)
+        {
+            statusBarText.Text = txt;
+        }
+
+        private void SetStatusbarText(string txt, Color color)
+        {
+            ColorAnimation animation;
+            animation = new ColorAnimation();
+            animation.From = color;
+            animation.To = Colors.White;
+            animation.Duration = new Duration(TimeSpan.FromSeconds(3));
+            statusBar.Background = new SolidColorBrush(color);
+            statusBar.Background.BeginAnimation(SolidColorBrush.ColorProperty, animation);
+            statusBarText.Text = txt;
         }
 
         /// <summary>
@@ -900,6 +980,28 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         {
             var unixTime = DateTime.Now.ToUniversalTime() - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
             return System.Convert.ToInt64(unixTime.TotalMilliseconds);
+        }
+
+        private void Window_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == System.Windows.Input.Key.Space)
+            {
+                if (writeCSV)
+                {
+                    OpenNewCSVFile();
+                }
+            }
+        }
+
+        private void CheckBoxSpeechCommandsChanged(object sender, System.Windows.RoutedEventArgs e)
+        {
+            if (this.sensor == null) return;
+            if (this.checkBoxSpeechCommands.IsChecked.Value)
+            {
+                CreateSpeechRecognizer();
+            } else {
+                StopSpeechRecognizer();
+            }
         }
 
     }

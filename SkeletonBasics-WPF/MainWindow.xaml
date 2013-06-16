@@ -1,7 +1,7 @@
 ﻿<Window x:Class="Microsoft.Samples.Kinect.SkeletonBasics.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="OSCeleton-KinectSDK" Height="735" Width="770" Loaded="WindowLoaded" Closing="WindowClosing">
+        Title="OSCeleton-KinectSDK" Height="735" Width="770" Loaded="WindowLoaded" Closing="WindowClosing" KeyUp="Window_KeyUp">
 
     <Window.Resources>
         <SolidColorBrush x:Key="MediumGreyBrush" Color="#ff6e6e6e"/>
@@ -68,5 +68,6 @@
             </StatusBarItem>
         </StatusBar>
         <CheckBox Grid.Row="2" Style="{StaticResource SquareCheckBox}" Content="Show Skeleton" Height="Auto" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="145,10,0,10" x:Name="checkBoxShowSkeleton" Checked="CheckBoxShowSkeletonChanged" Unchecked="CheckBoxShowSkeletonChanged"/>
+        <CheckBox Grid.Row="2" Style="{StaticResource SquareCheckBox}" Content="Speech Commands" Height="Auto" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="297,10,0,10" x:Name="checkBoxSpeechCommands" Checked="CheckBoxSpeechCommandsChanged" Unchecked="CheckBoxSpeechCommandsChanged"/>
     </Grid>
 </Window>
