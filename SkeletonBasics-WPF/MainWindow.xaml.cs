@@ -552,8 +552,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     SetStatusbarText("Paused capturing", Colors.Red);
                     break;
                 case "STOP":
-                    StopKinect();
                     SetStatusbarText("Kinect stopped", Colors.Red);
+                    StopKinect();
                     break;
             }
         }
