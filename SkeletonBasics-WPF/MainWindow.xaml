@@ -69,5 +69,6 @@
         </StatusBar>
         <CheckBox Grid.Row="2" Style="{StaticResource SquareCheckBox}" Content="Show Skeleton" Height="Auto" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="145,10,0,10" x:Name="checkBoxShowSkeleton" Checked="CheckBoxShowSkeletonChanged" Unchecked="CheckBoxShowSkeletonChanged"/>
         <CheckBox Grid.Row="2" Style="{StaticResource SquareCheckBox}" Content="Speech Commands" Height="Auto" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="297,10,0,10" x:Name="checkBoxSpeechCommands" Checked="CheckBoxSpeechCommandsChanged" Unchecked="CheckBoxSpeechCommandsChanged"/>
+        <TextBlock x:Name="helpbox" Margin="0,46,10,5" Width="666" HorizontalAlignment="Right" TextAlignment="Right"><Run Text="Press space to store the gesture in a new file."/></TextBlock>
     </Grid>
 </Window>

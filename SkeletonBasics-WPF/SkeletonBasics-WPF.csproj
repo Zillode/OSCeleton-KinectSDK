@@ -32,7 +32,7 @@
     <TargetCulture>en</TargetCulture>
     <ProductName>OSCeleton-KinectSDK</ProductName>
     <PublisherName>lhoste</PublisherName>
-    <ApplicationRevision>22</ApplicationRevision>
+    <ApplicationRevision>25</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>

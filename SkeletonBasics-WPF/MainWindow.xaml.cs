@@ -505,6 +505,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             this.speechEngine.UpdateRecognizerSetting("AdaptationOn", 0);
             this.speechEngine.SetInputToAudioStream(this.sensor.AudioSource.Start(), new SpeechAudioFormatInfo(EncodingFormat.Pcm, 16000, 16, 1, 32000, 2, null));
             this.speechEngine.RecognizeAsync(RecognizeMode.Multiple);
+            this.helpbox.Text = "Keyboard shortcuts: space; Speech commands: start, next, pause, continue, stop.";
         }
 
         private void StopSpeechRecognizer()
