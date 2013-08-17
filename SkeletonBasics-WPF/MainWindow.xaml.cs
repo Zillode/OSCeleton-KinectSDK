@@ -21,12 +21,30 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
     using System.Windows.Media.Animation;
     using System.Windows;
     using System.Threading;
+    using System.Windows.Media.Imaging;
+    using System.Collections.Concurrent;
 
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : System.Windows.Window
     {
+
+        public class SkeletonInformation
+        {
+            public int sensorId;
+            public int user;
+            public Skeleton skeleton;
+            public long time;
+
+            public SkeletonInformation(int sensorId, int user, Skeleton skeleton, long time)
+            {
+                this.sensorId = sensorId;
+                this.user = user;
+                this.skeleton = skeleton;
+                this.time = time;
+            }
+        }
 
         // Settings
         private bool allUsers = true;
@@ -45,10 +63,15 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
         // Options
         private bool showSkeleton = true;
+        private bool showRGB = false;
+        private bool showDepth = false;
         private bool speechCommands = true;
 
         // Outputs
+        private int sensorId = 0;
         private bool capturing = true;
+        private BlockingCollection<SkeletonInformation> skeletonInformationQueue = new BlockingCollection<SkeletonInformation>();
+        Thread sendSkeleton;
         private UdpWriter osc;
         private StreamWriter fileWriter;
         private Stopwatch stopwatch;
@@ -60,10 +83,14 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             "r_hip", "r_knee", "r_ankle", "r_foot" };
 
         // Active values
-        private Dictionary<int, Microsoft.Kinect.Toolkit.FaceTracking.FaceTracker> faceTrackers = new Dictionary<int, Microsoft.Kinect.Toolkit.FaceTracking.FaceTracker>();
-        private Skeleton[] skeletons = new Skeleton[skeletonCount];
-        private Byte[] colorPixelData;
-        private short[] depthPixelData;
+        private List<KinectSensor> sensors = new List<KinectSensor>();
+        private Dictionary<KinectSensor, int> sensorIds = new Dictionary<KinectSensor, int>();
+        private Dictionary<KinectSensor, Dictionary<int, Microsoft.Kinect.Toolkit.FaceTracking.FaceTracker>> faceTrackers = new Dictionary<KinectSensor, Dictionary<int, Microsoft.Kinect.Toolkit.FaceTracking.FaceTracker>>();
+        private Dictionary<KinectSensor, Skeleton[]> skeletons = new Dictionary<KinectSensor, Skeleton[]>();
+        private Dictionary<KinectSensor, Byte[]> colorPixelData = new Dictionary<KinectSensor,byte[]>();
+        private Dictionary<KinectSensor, short[]> depthPixelData = new Dictionary<KinectSensor,short[]>();
+        private Dictionary<KinectSensor, SpeechRecognitionEngine> speechEngine = new Dictionary<KinectSensor, SpeechRecognitionEngine>();
+
         private Boolean shuttingDown;
 
         /// <summary>
@@ -115,17 +142,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         /// Pen used for drawing bones that are currently inferred
         /// </summary>        
         private readonly Pen inferredBonePen = new Pen(Brushes.Gray, 1);
-
-        /// <summary>
-        /// Active Kinect sensor
-        /// </summary>
-        private KinectSensor sensor;
-
-        /// <summary>
-        /// Speech recognition engine using audio data from Kinect.
-        /// </summary>
-        private SpeechRecognitionEngine speechEngine;
-
+        
         /// <summary>
         /// Drawing group for skeleton rendering output
         /// </summary>
@@ -135,6 +152,11 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         /// Drawing image that we will display
         /// </summary>
         private DrawingImage imageSource;
+
+        /// <summary>
+        /// Drawing image that we will display
+        /// </summary>
+        private WriteableBitmap cameraSource;
 
         /// <summary>
         /// Initializes a new instance of the MainWindow class.
@@ -237,7 +259,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             {
                 OpenNewCSVFile();
             }
-
             
             // Create the drawing group we'll use for drawing
             this.drawingGroup = new DrawingGroup();
@@ -257,11 +278,10 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 if (potentialSensor.Status == KinectStatus.Connected)
                 {
                     StartKinect(potentialSensor);
-                    break;
                 }
             }
              
-            if (null == this.sensor)
+            if (this.sensors.Count == 0)
             {
                 this.statusBarText.Text = Properties.Resources.NoKinectReady;
             }
@@ -274,7 +294,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             switch (e.Status)
             {
                 case KinectStatus.Disconnected:
-                    StopKinect();
+                    StopKinect(e.Sensor);
                     break;
                 case KinectStatus.Connected:
                     StartKinect(e.Sensor);
@@ -290,11 +310,45 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
         void StartKinect(KinectSensor sensor)
         {
-            this.sensor = sensor;
-            if (this.sensor == null)
+            if (!this.sensors.Contains(sensor))
             {
+                this.sensors.Add(sensor);
+                this.sensorIds.Add(sensor, sensorId++);
+                if (sensorId > int.MaxValue / (skeletonCount * 2))
+                    sensorId = 0;
+                this.skeletons.Add(sensor, new Skeleton[skeletonCount]);
+                this.faceTrackers.Add(sensor, new Dictionary<int, Microsoft.Kinect.Toolkit.FaceTracking.FaceTracker>());
+                this.colorPixelData.Add(sensor, null);
+                this.depthPixelData.Add(sensor, null);
+            }
+
+            SetFrames(sensor);
+
+            try
+            {
+                sensor.Start();
+            }
+            catch (System.IO.IOException)
+            {
+                StopKinect(sensor);
+                System.Windows.MessageBox.Show("Failed to start the Kinect Sensor");
                 return;
             }
+
+            if (checkBoxSpeechCommands.IsChecked.Value)
+            {
+                CreateSpeechRecognizer(sensor);
+            }
+            if (this.sensors.Count > 1)
+                SetStatusbarText("Kinect started ("+this.sensors.Count+" sensors active)");
+            else
+                SetStatusbarText("Kinect started");
+
+        }
+
+        private void SetFrames(KinectSensor sensor)
+        {
+            if (sensor == null) return;
 
             var parameters = new TransformSmoothParameters
             {
@@ -312,16 +366,34 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 MaxDeviationRadius = 0.04f
             };
 
+            sensor.SkeletonFrameReady -= SensorSkeletonFrameReady;
+            sensor.AllFramesReady -= SensorAllFramesReady;
+            cameraSource = null;
+
             if (faceTracking)
             {
-                this.sensor.ColorStream.Enable(ColorImageFormat.RgbResolution640x480Fps30);
-                this.sensor.DepthStream.Enable(DepthImageFormat.Resolution320x240Fps30);
-                this.sensor.DepthStream.Range = DepthRange.Default;
-                this.sensor.SkeletonStream.EnableTrackingInNearRange = false;
-                this.sensor.SkeletonStream.TrackingMode = SkeletonTrackingMode.Default;
-                this.sensor.SkeletonStream.Enable(parameters);
-                colorPixelData = new byte[this.sensor.ColorStream.FramePixelDataLength];
-                depthPixelData = new short[this.sensor.DepthStream.FramePixelDataLength];
+                if (sendSkeleton != null) {
+                    sendSkeleton.Abort();
+                    sendSkeleton = null;
+                }
+            }
+            else
+            {
+                if (sendSkeleton == null)
+                {
+                    sendSkeleton = new Thread(SendSkeleton);
+                    sendSkeleton.Start();
+                }
+            }
+
+            if (((showRGB || showDepth) && sensors.FirstOrDefault() == sensor) || faceTracking)
+            {
+                sensor.ColorStream.Enable(ColorImageFormat.RgbResolution640x480Fps30);
+                sensor.DepthStream.Enable(DepthImageFormat.Resolution320x240Fps30);
+                sensor.DepthStream.Range = DepthRange.Default;
+                sensor.SkeletonStream.EnableTrackingInNearRange = false;
+                sensor.SkeletonStream.TrackingMode = SkeletonTrackingMode.Default;
+                sensor.SkeletonStream.Enable(parameters);
                 sensor.AllFramesReady += SensorAllFramesReady;
             }
             else
@@ -335,42 +407,36 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 sensor.SkeletonStream.Enable(parameters);
                 sensor.SkeletonFrameReady += SensorSkeletonFrameReady;
             }
-
-            try
-            {
-                sensor.Start();
-            }
-            catch (System.IO.IOException)
-            {
-                System.Windows.MessageBox.Show("Failed to start the Kinect Sensor");
-                return;
-            }
-
-            if (checkBoxSpeechCommands.IsChecked.Value)
-            {
-                CreateSpeechRecognizer();
-            }
-            SetStatusbarText("Kinect started");
         }
 
-        private void StopKinect()
+        private void StopKinect(KinectSensor sensor)
         {
-            if (this.sensor != null)
+            if (this.sensors.Contains(sensor))
             {
-                if (this.sensor.IsRunning)
+                this.sensors.Remove(sensor);
+                this.faceTrackers.Remove(sensor);
+                this.colorPixelData.Remove(sensor);
+                this.depthPixelData.Remove(sensor);
+            }
+            if (this.sensors.Count > 0)
+                SetStatusbarText("Kinect stopped (" + this.sensors.Count + " sensors active)", Colors.Red);
+            else
+                SetStatusbarText("Kinect stopped", Colors.Red);
+            if (sensors.Count == 0)
+            {
+                CloseCSVFile();
+            }
+            if (sensor.IsRunning)
+            {
+                sensor.ColorStream.Disable();
+                sensor.DepthStream.Disable();
+                sensor.SkeletonStream.Disable();
+                StopSpeechRecognizer(sensor);
+                if (sensor.AudioSource != null)
                 {
-                    SetStatusbarText("Kinect stopped", Colors.Red);
-                    CloseCSVFile();
-                    this.sensor.ColorStream.Disable();
-                    this.sensor.DepthStream.Disable();
-                    this.sensor.SkeletonStream.Disable();
-                    StopSpeechRecognizer();
-                    if (this.sensor.AudioSource != null)
-                    {
-                        this.sensor.AudioSource.Stop();
-                    }
-                    this.sensor.Stop();
+                    sensor.AudioSource.Stop();
                 }
+                sensor.Stop();
             }
         }
 
@@ -382,8 +448,15 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         /// <param name="e">event arguments</param>
         private void WindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
         {
+            if (sendSkeleton != null)
+            {
+                sendSkeleton.Abort();
+                sendSkeleton = null;
+            }
             shuttingDown = true;
-            StopKinect();
+            List<KinectSensor> kinects = new List<KinectSensor>(this.sensors);
+            foreach (KinectSensor kinect in kinects)
+                StopKinect(kinect);
         }
 
         /// <summary>
@@ -397,11 +470,12 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             {
                 return;
             }
+            KinectSensor sensor = (KinectSensor)sender;
             SkeletonFrame skeletonFrame = e.OpenSkeletonFrame();
             if (skeletonFrame == null) return;
-            skeletonFrame.CopySkeletonDataTo(skeletons);
+            skeletonFrame.CopySkeletonDataTo(skeletons[sensor]);
             skeletonFrame = null;
-            SensorFrameHelper(false);
+            SensorFrameHelper(sensor, false);
         }
             
         /// <summary>
@@ -415,58 +489,90 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             {
                 return;
             }
+            KinectSensor sensor = (KinectSensor)sender;
             ColorImageFrame colorFrame = e.OpenColorImageFrame();
             if (colorFrame == null) return;
-            colorFrame.CopyPixelDataTo(colorPixelData);
+            if (colorPixelData[sensor] == null)
+                colorPixelData[sensor] = new byte[colorFrame.PixelDataLength];
+            colorFrame.CopyPixelDataTo(colorPixelData[sensor]);
             colorFrame = null;
             DepthImageFrame depthFrame = e.OpenDepthImageFrame();
             if (depthFrame == null) return;
-            depthFrame.CopyPixelDataTo(depthPixelData);
+            if (depthPixelData[sensor] == null)
+                depthPixelData[sensor] = new short[depthFrame.PixelDataLength];
+            depthFrame.CopyPixelDataTo(depthPixelData[sensor]);
             depthFrame = null;
             SkeletonFrame skeletonFrame = e.OpenSkeletonFrame();
             if (skeletonFrame == null) return;
-            skeletonFrame.CopySkeletonDataTo(skeletons);
+            skeletonFrame.CopySkeletonDataTo(skeletons[sensor]);
             skeletonFrame = null;
-            SensorFrameHelper(true);
+            SensorFrameHelper(sensor, true);
         }
         
-        private void SensorFrameHelper(Boolean allFrames) {
+        private void SensorFrameHelper(KinectSensor sensor, Boolean allFrames) {
             if (capturing)
             {
-                foreach (Skeleton skel in skeletons)
+                for (int i = 0; i < skeletonCount; i++)
                 {
+                    Skeleton skel = skeletons[sensor][i];
+                    if (skel == null) continue;
                     if (skel.TrackingState == SkeletonTrackingState.Tracked)
                     {
-                        SendSkeleton(skel.TrackingId, skel);
+                        int userId = (sensorIds[sensor] * skeletonCount) + i;
+                        EnqueueSkeleton(sensorIds[sensor], userId, skel);
                         if (allFrames && faceTracking)
-                            SendFaceTracking(skel.TrackingId, skel);
+                            SendFaceTracking(sensor, userId, skel);
                     }
                 }
             }
 
-            if (showSkeleton)
+            if ((showSkeleton || showRGB || showDepth) && sensors.FirstOrDefault() == sensor)
             {
                 using (DrawingContext dc = this.drawingGroup.Open())
                 {
                     // Draw a transparent background to set the render size
                     dc.DrawRectangle(Brushes.Black, null, new System.Windows.Rect(0.0, 0.0, RenderWidth, RenderHeight));
 
-                    if (skeletons.Length != 0)
+                    if (showRGB && this.colorPixelData[sensor] != null) {
+                        if (cameraSource == null)
+                            cameraSource = new WriteableBitmap(sensor.ColorStream.FrameWidth, sensor.ColorStream.FrameHeight,
+                                96, 96, PixelFormats.Bgr32, null);
+                        cameraSource.WritePixels(
+                            new Int32Rect(0, 0, sensor.ColorStream.FrameWidth, sensor.ColorStream.FrameHeight),
+                                this.colorPixelData[sensor],
+                                sensor.ColorStream.FrameWidth * sensor.ColorStream.FrameBytesPerPixel,
+                                0);
+                        dc.DrawImage(cameraSource, new System.Windows.Rect(0.0, 0.0, sensor.ColorStream.FrameWidth, sensor.ColorStream.FrameHeight));
+                    }
+
+                    if (showDepth && this.depthPixelData[sensor] != null)
                     {
-                        foreach (Skeleton skel in skeletons)
+                        if (cameraSource == null)
+                            cameraSource = new WriteableBitmap(sensor.DepthStream.FrameWidth, sensor.DepthStream.FrameHeight,
+                                96, 96, PixelFormats.Gray16, null);
+                        cameraSource.WritePixels(
+                            new Int32Rect(0, 0, sensor.DepthStream.FrameWidth, sensor.DepthStream.FrameHeight),
+                                this.depthPixelData[sensor],
+                                sensor.DepthStream.FrameWidth * sensor.DepthStream.FrameBytesPerPixel,
+                                0);
+                        dc.DrawImage(cameraSource, new System.Windows.Rect(160, 120, sensor.DepthStream.FrameWidth, sensor.DepthStream.FrameHeight));
+                    }
+                    if (showSkeleton && skeletons[sensor].Length != 0)
+                    {
+                        foreach (Skeleton skel in skeletons[sensor])
                         {
                             RenderClippedEdges(skel, dc);
 
                             if (skel.TrackingState == SkeletonTrackingState.Tracked)
                             {
-                                this.DrawBonesAndJoints(skel, dc);
+                                this.DrawBonesAndJoints(sensor, skel, dc);
                             }
                             else if (skel.TrackingState == SkeletonTrackingState.PositionOnly)
                             {
                                 dc.DrawEllipse(
                                     this.centerPointBrush,
                                     null,
-                                    this.SkeletonPointToScreen(skel.Position),
+                                    this.SkeletonPointToScreen(sensor, skel.Position),
                                 BodyCenterThickness,
                                 BodyCenterThickness);
                             }
@@ -479,15 +585,16 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             }
         }
 
-        private void CreateSpeechRecognizer()
+        private void CreateSpeechRecognizer(KinectSensor sensor)
         {
+            if (this.speechEngine.ContainsKey(sensor)) return;
             RecognizerInfo ri = SpeechRecognitionEngine.InstalledRecognizers()
                 .Where(r => r.Culture.Name == "en-US").FirstOrDefault();
             if (ri == null)
             {
                 return;
             }
-            this.speechEngine = new SpeechRecognitionEngine(ri.Id);
+            SpeechRecognitionEngine speech = new SpeechRecognitionEngine(ri.Id);
             var words = new Choices();
             words.Add("start");
             words.Add("next");
@@ -498,22 +605,25 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             gb.Culture = ri.Culture;
             gb.Append(words);
             var g = new Grammar(gb);
-            this.speechEngine.LoadGrammar(g);
-            this.speechEngine.SpeechRecognized += SpeechRecognized;
+            speech.LoadGrammar(g);
+            speech.SpeechRecognized += SpeechRecognized;
             // For long recognition sessions (a few hours or more), it may be beneficial to turn off adaptation of the acoustic model. 
             // This will prevent recognition accuracy from degrading over time.
-            this.speechEngine.UpdateRecognizerSetting("AdaptationOn", 0);
-            this.speechEngine.SetInputToAudioStream(this.sensor.AudioSource.Start(), new SpeechAudioFormatInfo(EncodingFormat.Pcm, 16000, 16, 1, 32000, 2, null));
-            this.speechEngine.RecognizeAsync(RecognizeMode.Multiple);
+            speech.UpdateRecognizerSetting("AdaptationOn", 0);
+            speech.SetInputToAudioStream(sensor.AudioSource.Start(), new SpeechAudioFormatInfo(EncodingFormat.Pcm, 16000, 16, 1, 32000, 2, null));
+            speech.RecognizeAsync(RecognizeMode.Multiple);
+            this.speechEngine[sensor] = speech;
             this.helpbox.Text = "Keyboard shortcuts: space; Speech commands: start, next, pause, continue, stop.";
         }
 
-        private void StopSpeechRecognizer()
+        private void StopSpeechRecognizer(KinectSensor sensor)
         {
-            if (this.speechEngine != null)
+            if (!this.speechEngine.ContainsKey(sensor)) return;
+            var speechEngine = this.speechEngine[sensor];
+            this.speechEngine.Remove(sensor);
+            if (speechEngine != null)
             {
-                ThreadPool.QueueUserWorkItem((object x) => (x as IDisposable).Dispose(), this.speechEngine);
-                this.speechEngine = null;
+                ThreadPool.QueueUserWorkItem((object x) => (x as IDisposable).Dispose(), speechEngine);
             }
         }
 
@@ -532,7 +642,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         if (potentialSensor.Status == KinectStatus.Connected)
                         {
                             StartKinect(potentialSensor);
-                            break;
                         }
                     }
                     break;
@@ -553,7 +662,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     break;
                 case "STOP":
                     SetStatusbarText("Kinect stopped", Colors.Red);
-                    StopKinect();
+                    List<KinectSensor> kinects = new List<KinectSensor>(sensors);
+                    foreach (KinectSensor kinect in kinects)
+                        StopKinect(kinect);
                     break;
             }
         }
@@ -562,9 +673,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         {
             CloseCSVFile();
             fileWriter = new StreamWriter(Environment.GetFolderPath(Environment.SpecialFolder.Personal) + "/points-MSK-" + getUnixEpochTime().ToString().Replace(",", ".") + ".csv", false);
-            fileWriter.WriteLine("Joint, user, joint, x, y, z, confidence, time");
-            fileWriter.WriteLine("Face, user, x, y, z, pitch, yaw, roll, time");
-            fileWriter.WriteLine("FaceAnimation, face, lip_raise, lip_stretcher, lip_corner_depressor, jaw_lower, brow_lower, brow_raise, time");
+            fileWriter.WriteLine("Joint, sensor, user, joint, x, y, z, confidence, time");
+            fileWriter.WriteLine("Face, sensor, user, x, y, z, pitch, yaw, roll, time");
+            fileWriter.WriteLine("FaceAnimation, sensor, user, lip_raise, lip_stretcher, lip_corner_depressor, jaw_lower, brow_lower, brow_raise, time");
             SetStatusbarText( "Writing to file " + DateTime.Now.ToLongTimeString(), Colors.Orange);
         }
 
@@ -599,36 +710,36 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         /// </summary>
         /// <param name="skeleton">skeleton to draw</param>
         /// <param name="drawingContext">drawing context to draw to</param>
-        private void DrawBonesAndJoints(Skeleton skeleton, DrawingContext drawingContext)
+        private void DrawBonesAndJoints(KinectSensor sensor, Skeleton skeleton, DrawingContext drawingContext)
         {
             // Render Torso
-            this.DrawBone(skeleton, drawingContext, JointType.Head, JointType.ShoulderCenter);
-            this.DrawBone(skeleton, drawingContext, JointType.ShoulderCenter, JointType.ShoulderLeft);
-            this.DrawBone(skeleton, drawingContext, JointType.ShoulderCenter, JointType.ShoulderRight);
-            this.DrawBone(skeleton, drawingContext, JointType.ShoulderCenter, JointType.Spine);
-            this.DrawBone(skeleton, drawingContext, JointType.Spine, JointType.HipCenter);
-            this.DrawBone(skeleton, drawingContext, JointType.HipCenter, JointType.HipLeft);
-            this.DrawBone(skeleton, drawingContext, JointType.HipCenter, JointType.HipRight);
+            this.DrawBone(sensor, skeleton, drawingContext, JointType.Head, JointType.ShoulderCenter);
+            this.DrawBone(sensor, skeleton, drawingContext, JointType.ShoulderCenter, JointType.ShoulderLeft);
+            this.DrawBone(sensor, skeleton, drawingContext, JointType.ShoulderCenter, JointType.ShoulderRight);
+            this.DrawBone(sensor, skeleton, drawingContext, JointType.ShoulderCenter, JointType.Spine);
+            this.DrawBone(sensor, skeleton, drawingContext, JointType.Spine, JointType.HipCenter);
+            this.DrawBone(sensor, skeleton, drawingContext, JointType.HipCenter, JointType.HipLeft);
+            this.DrawBone(sensor, skeleton, drawingContext, JointType.HipCenter, JointType.HipRight);
 
             // Left Arm
-            this.DrawBone(skeleton, drawingContext, JointType.ShoulderLeft, JointType.ElbowLeft);
-            this.DrawBone(skeleton, drawingContext, JointType.ElbowLeft, JointType.WristLeft);
-            this.DrawBone(skeleton, drawingContext, JointType.WristLeft, JointType.HandLeft);
+            this.DrawBone(sensor, skeleton, drawingContext, JointType.ShoulderLeft, JointType.ElbowLeft);
+            this.DrawBone(sensor, skeleton, drawingContext, JointType.ElbowLeft, JointType.WristLeft);
+            this.DrawBone(sensor, skeleton, drawingContext, JointType.WristLeft, JointType.HandLeft);
 
             // Right Arm
-            this.DrawBone(skeleton, drawingContext, JointType.ShoulderRight, JointType.ElbowRight);
-            this.DrawBone(skeleton, drawingContext, JointType.ElbowRight, JointType.WristRight);
-            this.DrawBone(skeleton, drawingContext, JointType.WristRight, JointType.HandRight);
+            this.DrawBone(sensor, skeleton, drawingContext, JointType.ShoulderRight, JointType.ElbowRight);
+            this.DrawBone(sensor, skeleton, drawingContext, JointType.ElbowRight, JointType.WristRight);
+            this.DrawBone(sensor, skeleton, drawingContext, JointType.WristRight, JointType.HandRight);
 
             // Left Leg
-            this.DrawBone(skeleton, drawingContext, JointType.HipLeft, JointType.KneeLeft);
-            this.DrawBone(skeleton, drawingContext, JointType.KneeLeft, JointType.AnkleLeft);
-            this.DrawBone(skeleton, drawingContext, JointType.AnkleLeft, JointType.FootLeft);
+            this.DrawBone(sensor, skeleton, drawingContext, JointType.HipLeft, JointType.KneeLeft);
+            this.DrawBone(sensor, skeleton, drawingContext, JointType.KneeLeft, JointType.AnkleLeft);
+            this.DrawBone(sensor, skeleton, drawingContext, JointType.AnkleLeft, JointType.FootLeft);
 
             // Right Leg
-            this.DrawBone(skeleton, drawingContext, JointType.HipRight, JointType.KneeRight);
-            this.DrawBone(skeleton, drawingContext, JointType.KneeRight, JointType.AnkleRight);
-            this.DrawBone(skeleton, drawingContext, JointType.AnkleRight, JointType.FootRight);
+            this.DrawBone(sensor, skeleton, drawingContext, JointType.HipRight, JointType.KneeRight);
+            this.DrawBone(sensor, skeleton, drawingContext, JointType.KneeRight, JointType.AnkleRight);
+            this.DrawBone(sensor, skeleton, drawingContext, JointType.AnkleRight, JointType.FootRight);
  
             // Render Joints
             foreach (Joint joint in skeleton.Joints)
@@ -646,7 +757,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
                 if (drawBrush != null)
                 {
-                    drawingContext.DrawEllipse(drawBrush, null, this.SkeletonPointToScreen(joint.Position), JointThickness, JointThickness);
+                    drawingContext.DrawEllipse(drawBrush, null, this.SkeletonPointToScreen(sensor, joint.Position), JointThickness, JointThickness);
                 }
             }
         }
@@ -656,11 +767,11 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         /// </summary>
         /// <param name="skelpoint">point to map</param>
         /// <returns>mapped point</returns>
-        private System.Windows.Point SkeletonPointToScreen(SkeletonPoint skelpoint)
+        private System.Windows.Point SkeletonPointToScreen(KinectSensor sensor, SkeletonPoint skelpoint)
         {
             // Convert point to depth space.  
             // We are not using depth directly, but we do want the points in our 640x480 output resolution.
-            DepthImagePoint depthPoint = this.sensor.CoordinateMapper.MapSkeletonPointToDepthPoint(skelpoint, DepthImageFormat.Resolution640x480Fps30);
+            DepthImagePoint depthPoint = sensor.CoordinateMapper.MapSkeletonPointToDepthPoint(skelpoint, DepthImageFormat.Resolution640x480Fps30);
             return new System.Windows.Point(depthPoint.X, depthPoint.Y);
         }
 
@@ -671,7 +782,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         /// <param name="drawingContext">drawing context to draw to</param>
         /// <param name="jointType0">joint to start drawing from</param>
         /// <param name="jointType1">joint to end drawing at</param>
-        private void DrawBone(Skeleton skeleton, DrawingContext drawingContext, JointType jointType0, JointType jointType1)
+        private void DrawBone(KinectSensor sensor, Skeleton skeleton, DrawingContext drawingContext, JointType jointType0, JointType jointType1)
         {
             Joint joint0 = skeleton.Joints[jointType0];
             Joint joint1 = skeleton.Joints[jointType1];
@@ -697,7 +808,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 drawPen = this.trackedBonePen;
             }
 
-            drawingContext.DrawLine(drawPen, this.SkeletonPointToScreen(joint0.Position), this.SkeletonPointToScreen(joint1.Position));
+            drawingContext.DrawLine(drawPen, this.SkeletonPointToScreen(sensor, joint0.Position), this.SkeletonPointToScreen(sensor, joint1.Position));
         }
 
         /// <summary>
@@ -707,15 +818,15 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         /// <param name="e">event arguments</param>
         private void CheckBoxSeatedModeChanged(object sender, System.Windows.RoutedEventArgs e)
         {
-            if (null != this.sensor)
-            {
+            List<KinectSensor> kinects = new List<KinectSensor>(sensors);
+            foreach (KinectSensor kinect in kinects) {
                 if (this.checkBoxSeatedMode.IsChecked.GetValueOrDefault())
                 {
-                    this.sensor.SkeletonStream.TrackingMode = SkeletonTrackingMode.Seated;
+                    kinect.SkeletonStream.TrackingMode = SkeletonTrackingMode.Seated;
                 }
                 else
                 {
-                    this.sensor.SkeletonStream.TrackingMode = SkeletonTrackingMode.Default;
+                    kinect.SkeletonStream.TrackingMode = SkeletonTrackingMode.Default;
                 }
             }
         }
@@ -731,8 +842,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         }
 
 
-        void SendFaceTracking(int user, Skeleton s)
+        void SendFaceTracking(KinectSensor sensor, int user, Skeleton s)
         {
+            Dictionary<int, FaceTracker> faceTrackers = this.faceTrackers[sensor];
             if (!faceTrackers.ContainsKey(user))
             {
                 if (faceTrackers.Count > 10)
@@ -754,8 +866,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             }
 
             Microsoft.Kinect.Toolkit.FaceTracking.FaceTrackFrame faceFrame = faceTrackers[user].Track(
-                            sensor.ColorStream.Format, colorPixelData,
-                            sensor.DepthStream.Format, depthPixelData,
+                            sensor.ColorStream.Format, colorPixelData[sensor],
+                            sensor.DepthStream.Format, depthPixelData[sensor],
                             s);
 
             if (faceFrame.TrackSuccessful)
@@ -768,52 +880,64 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
                 if (faceTrackingHeadPose)
                 {
-                    SendFacePoseMessage(user,
+                    SendFacePoseMessage(sensorId, user,
                         s.Joints[JointType.Head].Position.X, s.Joints[JointType.Head].Position.Y, s.Joints[JointType.Head].Position.Z,
                         faceFrame.Rotation.X, faceFrame.Rotation.Y, faceFrame.Rotation.Z, useUnixEpochTime ? getUnixEpochTime() : stopwatch.ElapsedMilliseconds);
                 }
 
                 if (faceTrackingAnimationUnits)
                 {
-                    SendFaceAnimationMessage(user, faceFrame.GetAnimationUnitCoefficients(), useUnixEpochTime ? getUnixEpochTime() : stopwatch.ElapsedMilliseconds);
+                    SendFaceAnimationMessage(sensorId, user, faceFrame.GetAnimationUnitCoefficients(), useUnixEpochTime ? getUnixEpochTime() : stopwatch.ElapsedMilliseconds);
                 }
             }
         }
 
-        void SendSkeleton(int user, Skeleton s)
+        void EnqueueSkeleton(int sensorId, int user, Skeleton s)
+        {
+            skeletonInformationQueue.Add(new SkeletonInformation(sensorId, user, s, stopwatch.ElapsedMilliseconds));
+        }
+          
+        void SendSkeleton() {
+            while (true) {
+                SkeletonInformation i = skeletonInformationQueue.Take();
+                SendSkeleton2(i.sensorId, i.user, i.skeleton, i.time);
+            }
+        }
+
+        void SendSkeleton2(int sensorId, int user, Skeleton s, long time)
         {
             if (!capturing) { return; }
-
+            
             if (!fullBody)
             {
-                ProcessJointInformation(user, 15, s.Joints[JointType.HandRight], s.BoneOrientations[JointType.HandRight]);
+                ProcessJointInformation(sensorId, user, 15, s.Joints[JointType.HandRight], s.BoneOrientations[JointType.HandRight], time);
             }
             else
             {
-                ProcessJointInformation(user, 1, s.Joints[JointType.Head], s.BoneOrientations[JointType.Head]);
-                ProcessJointInformation(user, 2, s.Joints[JointType.ShoulderCenter], s.BoneOrientations[JointType.ShoulderCenter]);
-                ProcessJointInformation(user, 3, s.Joints[JointType.Spine], s.BoneOrientations[JointType.Spine]);
-                ProcessJointInformation(user, 4, s.Joints[JointType.HipCenter], s.BoneOrientations[JointType.HipCenter]);
-                // ProcessJointInformation(user, 5, s.Joints[JointType.], s.BoneOrientations[JointType.]);
-                ProcessJointInformation(user, 6, s.Joints[JointType.ShoulderLeft], s.BoneOrientations[JointType.ShoulderLeft]);
-                ProcessJointInformation(user, 7, s.Joints[JointType.ElbowLeft], s.BoneOrientations[JointType.ElbowLeft]);
-                ProcessJointInformation(user, 8, s.Joints[JointType.WristLeft], s.BoneOrientations[JointType.WristLeft]);
-                ProcessJointInformation(user, 9, s.Joints[JointType.HandLeft], s.BoneOrientations[JointType.HandLeft]);
-                // ProcessJointInformation(user, 10, s.Joints[JointType.], s.BoneOrientations[JointType.]);
-                // ProcessJointInformation(user, 11, s.Joints[JointType.], s.BoneOrientations[JointType.]);
-                ProcessJointInformation(user, 12, s.Joints[JointType.ShoulderRight], s.BoneOrientations[JointType.ShoulderRight]);
-                ProcessJointInformation(user, 13, s.Joints[JointType.ElbowRight], s.BoneOrientations[JointType.ElbowRight]);
-                ProcessJointInformation(user, 14, s.Joints[JointType.WristRight], s.BoneOrientations[JointType.WristRight]);
-                ProcessJointInformation(user, 15, s.Joints[JointType.HandRight], s.BoneOrientations[JointType.HandRight]);
-                // ProcessJointInformation(user, 16, s.Joints[JointType.], s.BoneOrientations[JointType.]);
-                ProcessJointInformation(user, 17, s.Joints[JointType.HipLeft], s.BoneOrientations[JointType.HipLeft]);
-                ProcessJointInformation(user, 18, s.Joints[JointType.KneeLeft], s.BoneOrientations[JointType.KneeLeft]);
-                ProcessJointInformation(user, 19, s.Joints[JointType.AnkleLeft], s.BoneOrientations[JointType.AnkleLeft]);
-                ProcessJointInformation(user, 20, s.Joints[JointType.FootLeft], s.BoneOrientations[JointType.FootLeft]);
-                ProcessJointInformation(user, 21, s.Joints[JointType.HipRight], s.BoneOrientations[JointType.HipRight]);
-                ProcessJointInformation(user, 22, s.Joints[JointType.KneeRight], s.BoneOrientations[JointType.KneeRight]);
-                ProcessJointInformation(user, 23, s.Joints[JointType.AnkleRight], s.BoneOrientations[JointType.AnkleRight]);
-                ProcessJointInformation(user, 24, s.Joints[JointType.FootRight], s.BoneOrientations[JointType.FootRight]);
+                ProcessJointInformation(sensorId, user, 1, s.Joints[JointType.Head], s.BoneOrientations[JointType.Head], time);
+                ProcessJointInformation(sensorId, user, 2, s.Joints[JointType.ShoulderCenter], s.BoneOrientations[JointType.ShoulderCenter], time);
+                ProcessJointInformation(sensorId, user, 3, s.Joints[JointType.Spine], s.BoneOrientations[JointType.Spine], time);
+                ProcessJointInformation(sensorId, user, 4, s.Joints[JointType.HipCenter], s.BoneOrientations[JointType.HipCenter], time);
+                // ProcessJointInformation(sensorId, user, 5, s.Joints[JointType.], s.BoneOrientations[JointType.], time);
+                ProcessJointInformation(sensorId, user, 6, s.Joints[JointType.ShoulderLeft], s.BoneOrientations[JointType.ShoulderLeft], time);
+                ProcessJointInformation(sensorId, user, 7, s.Joints[JointType.ElbowLeft], s.BoneOrientations[JointType.ElbowLeft], time);
+                ProcessJointInformation(sensorId, user, 8, s.Joints[JointType.WristLeft], s.BoneOrientations[JointType.WristLeft], time);
+                ProcessJointInformation(sensorId, user, 9, s.Joints[JointType.HandLeft], s.BoneOrientations[JointType.HandLeft], time);
+                // ProcessJointInformation(sensorId, user, 10, s.Joints[JointType.], s.BoneOrientations[JointType.], time);
+                // ProcessJointInformation(sensorId, user, 11, s.Joints[JointType.], s.BoneOrientations[JointType.], time);
+                ProcessJointInformation(sensorId, user, 12, s.Joints[JointType.ShoulderRight], s.BoneOrientations[JointType.ShoulderRight], time);
+                ProcessJointInformation(sensorId, user, 13, s.Joints[JointType.ElbowRight], s.BoneOrientations[JointType.ElbowRight], time);
+                ProcessJointInformation(sensorId, user, 14, s.Joints[JointType.WristRight], s.BoneOrientations[JointType.WristRight], time);
+                ProcessJointInformation(sensorId, user, 15, s.Joints[JointType.HandRight], s.BoneOrientations[JointType.HandRight], time);
+                // ProcessJointInformation(sensorId, user, 16, s.Joints[JointType.], s.BoneOrientations[JointType.], time);
+                ProcessJointInformation(sensorId, user, 17, s.Joints[JointType.HipLeft], s.BoneOrientations[JointType.HipLeft], time);
+                ProcessJointInformation(sensorId, user, 18, s.Joints[JointType.KneeLeft], s.BoneOrientations[JointType.KneeLeft], time);
+                ProcessJointInformation(sensorId, user, 19, s.Joints[JointType.AnkleLeft], s.BoneOrientations[JointType.AnkleLeft], time);
+                ProcessJointInformation(sensorId, user, 20, s.Joints[JointType.FootLeft], s.BoneOrientations[JointType.FootLeft], time);
+                ProcessJointInformation(sensorId, user, 21, s.Joints[JointType.HipRight], s.BoneOrientations[JointType.HipRight], time);
+                ProcessJointInformation(sensorId, user, 22, s.Joints[JointType.KneeRight], s.BoneOrientations[JointType.KneeRight], time);
+                ProcessJointInformation(sensorId, user, 23, s.Joints[JointType.AnkleRight], s.BoneOrientations[JointType.AnkleRight], time);
+                ProcessJointInformation(sensorId, user, 24, s.Joints[JointType.FootRight], s.BoneOrientations[JointType.FootRight], stopwatch.ElapsedMilliseconds);
             }
         }
 
@@ -825,24 +949,24 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             return 0.5;
         }
 
-        void ProcessJointInformation(int user, int joint, Joint j, BoneOrientation bo)
+        void ProcessJointInformation(int sensorId, int user, int joint, Joint j, BoneOrientation bo, long time)
         {
-            SendJointMessage(user, joint,
+            SendJointMessage(sensorId, user, joint,
                 j.Position.X, j.Position.Y, j.Position.Z,
                 JointToConfidenceValue(j),
-                stopwatch.ElapsedMilliseconds);
+                time);
         }
 
-        void SendJointMessage(int user, int joint, double x, double y, double z, double confidence, double time)
+        void SendJointMessage(int sensorId, int user, int joint, double x, double y, double z, double confidence, double time)
         {
             if (osc != null)
             {
-                osc.Send(new OscElement("/joint", oscMapping[joint], user, (float)(x * pointScale), (float)(-y * pointScale), (float)(z * pointScale), (float)confidence, time));
+                osc.Send(new OscElement("/joint", oscMapping[joint], sensorId, user, (float)(x * pointScale), (float)(-y * pointScale), (float)(z * pointScale), (float)confidence, time));
             }
             if (fileWriter != null)
             {
                 // Joint, user, joint, x, y, z, on
-                fileWriter.WriteLine("Joint," + user + "," + joint + "," +
+                fileWriter.WriteLine("Joint," + sensorId + "," + user + "," + joint + "," +
                     (x * pointScale).ToString().Replace(",", ".") + "," +
                     (-y * pointScale).ToString().Replace(",", ".") + "," +
                     (z * pointScale).ToString().Replace(",", ".") + "," +
@@ -851,13 +975,13 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             }
         }
 
-        void SendFacePoseMessage(int user, float x, float y, float z, float rotationX, float rotationY, float rotationZ, double time)
+        void SendFacePoseMessage(int sensorId, int user, float x, float y, float z, float rotationX, float rotationY, float rotationZ, double time)
         {
             if (osc != null)
             {
                 osc.Send(new OscElement(
                     "/face",
-                    user,
+                    sensorId, user,
                     (float)(x * pointScale), (float)(-y * pointScale), (float)(z * pointScale),
                     rotationX, rotationY, rotationZ,
                     time));
@@ -865,7 +989,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             if (fileWriter != null)
             {
                 fileWriter.WriteLine("Face," +
-                    user + "," +
+                    sensorId + "," + user + "," +
                     (x * pointScale).ToString().Replace(",", ".") + "," +
                     (-y * pointScale).ToString().Replace(",", ".") + "," +
                     (z * pointScale).ToString().Replace(",", ".") + "," +
@@ -876,13 +1000,13 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             }
         }
 
-        void SendFaceAnimationMessage(int user, EnumIndexableCollection<AnimationUnit, float> c, double time)
+        void SendFaceAnimationMessage(int sensorId, int user, EnumIndexableCollection<AnimationUnit, float> c, double time)
         {
             if (osc != null)
             {
                 osc.Send(new OscElement(
                     "/face_animation",
-                    user,
+                    sensorId, user,
                     c[AnimationUnit.LipRaiser],
                     c[AnimationUnit.LipStretcher],
                     c[AnimationUnit.LipCornerDepressor],
@@ -894,7 +1018,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             if (fileWriter != null)
             {
                 fileWriter.WriteLine("FaceAnimation," +
-                    user + "," +
+                    sensorId + "," + user + "," +
                     c[AnimationUnit.LipRaiser].ToString().Replace(",", ".") + "," +
                     c[AnimationUnit.LipStretcher].ToString().Replace(",", ".") + "," +
                     c[AnimationUnit.LipCornerDepressor].ToString().Replace(",", ".") + "," +
@@ -996,13 +1120,39 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
         private void CheckBoxSpeechCommandsChanged(object sender, System.Windows.RoutedEventArgs e)
         {
-            if (this.sensor == null) return;
-            if (this.checkBoxSpeechCommands.IsChecked.Value)
+            List<KinectSensor> kinects = new List<KinectSensor>(sensors);
+            foreach (KinectSensor kinect in kinects)
             {
-                CreateSpeechRecognizer();
-            } else {
-                StopSpeechRecognizer();
+                if (kinect == null) return;
+                if (this.checkBoxSpeechCommands.IsChecked.Value)
+                {
+                    CreateSpeechRecognizer(kinect);
+                }
+                else
+                {
+                    StopSpeechRecognizer(kinect);
+                }
             }
+        }
+
+        private void ImgClickSwitchKinect(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (sensors.Count < 2) return;
+            KinectSensor sensor = this.sensors.FirstOrDefault();
+            if (sensor != null)
+            {
+                this.sensors.Remove(sensor);
+                this.sensors.Add(sensor);
+                SetFrames(sensor);
+                SetFrames(sensors.FirstOrDefault());
+            }
+        }
+
+        private void cbxDisplay_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            this.showRGB = this.cbxDisplay.SelectedIndex == 1;
+            this.showDepth = this.cbxDisplay.SelectedIndex == 2;
+            SetFrames(sensors.FirstOrDefault());
         }
 
     }

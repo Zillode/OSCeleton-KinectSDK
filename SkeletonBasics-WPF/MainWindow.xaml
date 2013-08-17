@@ -56,7 +56,7 @@
         <DockPanel Grid.Row="0" Margin="0 0 0 20">
             <Image DockPanel.Dock="Left" Source="Images\Logo.png" Stretch="Fill" Height="32" Width="81" Margin="0 10 0 5"/>
             <TextBlock DockPanel.Dock="Right" Margin="0 0 -1 0" VerticalAlignment="Bottom" Foreground="{StaticResource MediumGreyBrush}" FontFamily="Segoe UI" FontSize="18">OSCeleton-KinectSDK</TextBlock>
-            <Image Grid.Column="1" Source="Images\Status.png" Stretch="None" HorizontalAlignment="Center" Margin="0 0 0 5"/>
+            <Image Grid.Column="1" Source="Images\Status.png" Stretch="None" HorizontalAlignment="Center" Margin="0 0 0 5" MouseUp="ImgClickSwitchKinect"/>
         </DockPanel>
         <Viewbox Grid.Row="1" Stretch="Uniform" HorizontalAlignment="Center">
             <Image Name="Image" Width="640" Height="480"/>
@@ -68,7 +68,12 @@
             </StatusBarItem>
         </StatusBar>
         <CheckBox Grid.Row="2" Style="{StaticResource SquareCheckBox}" Content="Show Skeleton" Height="Auto" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="145,10,0,10" x:Name="checkBoxShowSkeleton" Checked="CheckBoxShowSkeletonChanged" Unchecked="CheckBoxShowSkeletonChanged"/>
-        <CheckBox Grid.Row="2" Style="{StaticResource SquareCheckBox}" Content="Speech Commands" Height="Auto" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="297,10,0,10" x:Name="checkBoxSpeechCommands" Checked="CheckBoxSpeechCommandsChanged" Unchecked="CheckBoxSpeechCommandsChanged"/>
+        <CheckBox Grid.Row="2" Style="{StaticResource SquareCheckBox}" Content="Speech Commands" Height="Auto" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="306,10,0,10" x:Name="checkBoxSpeechCommands" Checked="CheckBoxSpeechCommandsChanged" Unchecked="CheckBoxSpeechCommandsChanged"/>
         <TextBlock x:Name="helpbox" Margin="0,46,10,5" Width="666" HorizontalAlignment="Right" TextAlignment="Right"><Run Text="Press space to store the gesture in a new file."/></TextBlock>
+        <ComboBox x:Name="cbxDisplay" HorizontalAlignment="Right" Margin="0,10,3,12" Width="58" HorizontalContentAlignment="Right" VerticalContentAlignment="Stretch" Grid.Row="2" SelectionChanged="cbxDisplay_SelectionChanged" SelectedIndex="0">
+            <ComboBoxItem Content="None"/>
+            <ComboBoxItem Content="RGB"/>
+            <ComboBoxItem Content="Depth"/>
+        </ComboBox>
     </Grid>
 </Window>
