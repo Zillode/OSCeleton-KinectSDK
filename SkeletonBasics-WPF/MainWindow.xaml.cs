@@ -33,7 +33,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         // Settings
         private bool allUsers = true;
         private bool fullBody = true;
-        private bool faceTracking = true;
+        private bool faceTracking = false;
         private bool faceTracking2DMesh = false;
         private bool faceTrackingHeadPose = true;
         private bool faceTrackingAnimationUnits = true;
