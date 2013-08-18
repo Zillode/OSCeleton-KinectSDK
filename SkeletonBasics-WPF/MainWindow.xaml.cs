@@ -30,26 +30,10 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
     public partial class MainWindow : System.Windows.Window
     {
 
-        public class SkeletonInformation
-        {
-            public int sensorId;
-            public int user;
-            public Skeleton skeleton;
-            public long time;
-
-            public SkeletonInformation(int sensorId, int user, Skeleton skeleton, long time)
-            {
-                this.sensorId = sensorId;
-                this.user = user;
-                this.skeleton = skeleton;
-                this.time = time;
-            }
-        }
-
         // Settings
         private bool allUsers = true;
         private bool fullBody = true;
-        private bool faceTracking = false;
+        private bool faceTracking = true;
         private bool faceTracking2DMesh = false;
         private bool faceTrackingHeadPose = true;
         private bool faceTrackingAnimationUnits = true;
@@ -70,17 +54,11 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         // Outputs
         private int sensorId = 0;
         private bool capturing = true;
-        private BlockingCollection<SkeletonInformation> skeletonInformationQueue = new BlockingCollection<SkeletonInformation>();
-        Thread sendSkeleton;
+        private BlockingCollection<TrackingInformation> trackingInformationQueue = new BlockingCollection<TrackingInformation>();
+        Thread sendTracking;
         private UdpWriter osc;
         private StreamWriter fileWriter;
         private Stopwatch stopwatch;
-        private static List<String> oscMapping = new List<String> { "",
-            "head", "neck", "torso", "waist",
-            "l_collar", "l_shoulder", "l_elbow", "l_wrist", "l_hand", "l_fingertip",
-            "r_collar", "r_shoulder", "r_elbow", "r_wrist", "r_hand", "r_fingertip",
-            "l_hip", "l_knee", "l_ankle", "l_foot",
-            "r_hip", "r_knee", "r_ankle", "r_foot" };
 
         // Active values
         private List<KinectSensor> sensors = new List<KinectSensor>();
@@ -370,20 +348,10 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             sensor.AllFramesReady -= SensorAllFramesReady;
             cameraSource = null;
 
-            if (faceTracking)
+            if (sendTracking == null)
             {
-                if (sendSkeleton != null) {
-                    sendSkeleton.Abort();
-                    sendSkeleton = null;
-                }
-            }
-            else
-            {
-                if (sendSkeleton == null)
-                {
-                    sendSkeleton = new Thread(SendSkeleton);
-                    sendSkeleton.Start();
-                }
+                sendTracking = new Thread(SendTrackingInformation);
+                sendTracking.Start();
             }
 
             if (((showRGB || showDepth) && sensors.FirstOrDefault() == sensor) || faceTracking)
@@ -448,10 +416,10 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         /// <param name="e">event arguments</param>
         private void WindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            if (sendSkeleton != null)
+            if (sendTracking != null)
             {
-                sendSkeleton.Abort();
-                sendSkeleton = null;
+                sendTracking.Abort();
+                sendTracking = null;
             }
             shuttingDown = true;
             List<KinectSensor> kinects = new List<KinectSensor>(this.sensors);
@@ -521,7 +489,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         int userId = (sensorIds[sensor] * skeletonCount) + i;
                         EnqueueSkeleton(sensorIds[sensor], userId, skel);
                         if (allFrames && faceTracking)
-                            SendFaceTracking(sensor, userId, skel);
+                        {
+                            EnqueueFaceTracking(sensor, userId, skel);
+                        }
                     }
                 }
             }
@@ -842,7 +812,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         }
 
 
-        void SendFaceTracking(KinectSensor sensor, int user, Skeleton s)
+        void EnqueueFaceTracking(KinectSensor sensor, int user, Skeleton s)
         {
             Dictionary<int, FaceTracker> faceTrackers = this.faceTrackers[sensor];
             if (!faceTrackers.ContainsKey(user))
@@ -880,153 +850,42 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
                 if (faceTrackingHeadPose)
                 {
-                    SendFacePoseMessage(sensorId, user,
+                    EnqueueFacePoseMessage(sensorId, user,
                         s.Joints[JointType.Head].Position.X, s.Joints[JointType.Head].Position.Y, s.Joints[JointType.Head].Position.Z,
                         faceFrame.Rotation.X, faceFrame.Rotation.Y, faceFrame.Rotation.Z, useUnixEpochTime ? getUnixEpochTime() : stopwatch.ElapsedMilliseconds);
                 }
 
                 if (faceTrackingAnimationUnits)
                 {
-                    SendFaceAnimationMessage(sensorId, user, faceFrame.GetAnimationUnitCoefficients(), useUnixEpochTime ? getUnixEpochTime() : stopwatch.ElapsedMilliseconds);
+                    EnqueueFaceAnimationMessage(sensorId, user, faceFrame.GetAnimationUnitCoefficients(), useUnixEpochTime ? getUnixEpochTime() : stopwatch.ElapsedMilliseconds);
                 }
             }
         }
 
         void EnqueueSkeleton(int sensorId, int user, Skeleton s)
         {
-            skeletonInformationQueue.Add(new SkeletonInformation(sensorId, user, s, stopwatch.ElapsedMilliseconds));
+            if (!capturing) { return; }
+            trackingInformationQueue.Add(new SkeletonTrackingInformation(sensorId, user, s, fullBody, stopwatch.ElapsedMilliseconds));
         }
           
-        void SendSkeleton() {
+        void SendTrackingInformation() {
             while (true) {
-                SkeletonInformation i = skeletonInformationQueue.Take();
-                SendSkeleton2(i.sensorId, i.user, i.skeleton, i.time);
+                TrackingInformation i = trackingInformationQueue.Take();
+                if (capturing)
+                    i.Send(osc, fileWriter, pointScale);
             }
         }
 
-        void SendSkeleton2(int sensorId, int user, Skeleton s, long time)
+        void EnqueueFacePoseMessage(int sensorId, int user, float x, float y, float z, float rotationX, float rotationY, float rotationZ, double time)
         {
             if (!capturing) { return; }
-            
-            if (!fullBody)
-            {
-                ProcessJointInformation(sensorId, user, 15, s.Joints[JointType.HandRight], s.BoneOrientations[JointType.HandRight], time);
-            }
-            else
-            {
-                ProcessJointInformation(sensorId, user, 1, s.Joints[JointType.Head], s.BoneOrientations[JointType.Head], time);
-                ProcessJointInformation(sensorId, user, 2, s.Joints[JointType.ShoulderCenter], s.BoneOrientations[JointType.ShoulderCenter], time);
-                ProcessJointInformation(sensorId, user, 3, s.Joints[JointType.Spine], s.BoneOrientations[JointType.Spine], time);
-                ProcessJointInformation(sensorId, user, 4, s.Joints[JointType.HipCenter], s.BoneOrientations[JointType.HipCenter], time);
-                // ProcessJointInformation(sensorId, user, 5, s.Joints[JointType.], s.BoneOrientations[JointType.], time);
-                ProcessJointInformation(sensorId, user, 6, s.Joints[JointType.ShoulderLeft], s.BoneOrientations[JointType.ShoulderLeft], time);
-                ProcessJointInformation(sensorId, user, 7, s.Joints[JointType.ElbowLeft], s.BoneOrientations[JointType.ElbowLeft], time);
-                ProcessJointInformation(sensorId, user, 8, s.Joints[JointType.WristLeft], s.BoneOrientations[JointType.WristLeft], time);
-                ProcessJointInformation(sensorId, user, 9, s.Joints[JointType.HandLeft], s.BoneOrientations[JointType.HandLeft], time);
-                // ProcessJointInformation(sensorId, user, 10, s.Joints[JointType.], s.BoneOrientations[JointType.], time);
-                // ProcessJointInformation(sensorId, user, 11, s.Joints[JointType.], s.BoneOrientations[JointType.], time);
-                ProcessJointInformation(sensorId, user, 12, s.Joints[JointType.ShoulderRight], s.BoneOrientations[JointType.ShoulderRight], time);
-                ProcessJointInformation(sensorId, user, 13, s.Joints[JointType.ElbowRight], s.BoneOrientations[JointType.ElbowRight], time);
-                ProcessJointInformation(sensorId, user, 14, s.Joints[JointType.WristRight], s.BoneOrientations[JointType.WristRight], time);
-                ProcessJointInformation(sensorId, user, 15, s.Joints[JointType.HandRight], s.BoneOrientations[JointType.HandRight], time);
-                // ProcessJointInformation(sensorId, user, 16, s.Joints[JointType.], s.BoneOrientations[JointType.], time);
-                ProcessJointInformation(sensorId, user, 17, s.Joints[JointType.HipLeft], s.BoneOrientations[JointType.HipLeft], time);
-                ProcessJointInformation(sensorId, user, 18, s.Joints[JointType.KneeLeft], s.BoneOrientations[JointType.KneeLeft], time);
-                ProcessJointInformation(sensorId, user, 19, s.Joints[JointType.AnkleLeft], s.BoneOrientations[JointType.AnkleLeft], time);
-                ProcessJointInformation(sensorId, user, 20, s.Joints[JointType.FootLeft], s.BoneOrientations[JointType.FootLeft], time);
-                ProcessJointInformation(sensorId, user, 21, s.Joints[JointType.HipRight], s.BoneOrientations[JointType.HipRight], time);
-                ProcessJointInformation(sensorId, user, 22, s.Joints[JointType.KneeRight], s.BoneOrientations[JointType.KneeRight], time);
-                ProcessJointInformation(sensorId, user, 23, s.Joints[JointType.AnkleRight], s.BoneOrientations[JointType.AnkleRight], time);
-                ProcessJointInformation(sensorId, user, 24, s.Joints[JointType.FootRight], s.BoneOrientations[JointType.FootRight], stopwatch.ElapsedMilliseconds);
-            }
+            trackingInformationQueue.Add(new FacePoseTrackingInformation(sensorId, user, x, y, z, rotationX, rotationY, rotationZ, time));
         }
 
-        double JointToConfidenceValue(Joint j)
+        void EnqueueFaceAnimationMessage(int sensorId, int user, EnumIndexableCollection<AnimationUnit, float> c, double time)
         {
-            if (j.TrackingState == JointTrackingState.Tracked) return 1;
-            if (j.TrackingState == JointTrackingState.Inferred) return 0.5;
-            if (j.TrackingState == JointTrackingState.NotTracked) return 0.1;
-            return 0.5;
-        }
-
-        void ProcessJointInformation(int sensorId, int user, int joint, Joint j, BoneOrientation bo, long time)
-        {
-            SendJointMessage(sensorId, user, joint,
-                j.Position.X, j.Position.Y, j.Position.Z,
-                JointToConfidenceValue(j),
-                time);
-        }
-
-        void SendJointMessage(int sensorId, int user, int joint, double x, double y, double z, double confidence, double time)
-        {
-            if (osc != null)
-            {
-                osc.Send(new OscElement("/joint", oscMapping[joint], sensorId, user, (float)(x * pointScale), (float)(-y * pointScale), (float)(z * pointScale), (float)confidence, time));
-            }
-            if (fileWriter != null)
-            {
-                // Joint, user, joint, x, y, z, on
-                fileWriter.WriteLine("Joint," + sensorId + "," + user + "," + joint + "," +
-                    (x * pointScale).ToString().Replace(",", ".") + "," +
-                    (-y * pointScale).ToString().Replace(",", ".") + "," +
-                    (z * pointScale).ToString().Replace(",", ".") + "," +
-                    confidence.ToString().Replace(",", ".") + "," +
-                    time.ToString().Replace(",", "."));
-            }
-        }
-
-        void SendFacePoseMessage(int sensorId, int user, float x, float y, float z, float rotationX, float rotationY, float rotationZ, double time)
-        {
-            if (osc != null)
-            {
-                osc.Send(new OscElement(
-                    "/face",
-                    sensorId, user,
-                    (float)(x * pointScale), (float)(-y * pointScale), (float)(z * pointScale),
-                    rotationX, rotationY, rotationZ,
-                    time));
-            }
-            if (fileWriter != null)
-            {
-                fileWriter.WriteLine("Face," +
-                    sensorId + "," + user + "," +
-                    (x * pointScale).ToString().Replace(",", ".") + "," +
-                    (-y * pointScale).ToString().Replace(",", ".") + "," +
-                    (z * pointScale).ToString().Replace(",", ".") + "," +
-                    rotationX.ToString().Replace(",", ".") + "," +
-                    rotationY.ToString().Replace(",", ".") + "," +
-                    rotationZ.ToString().Replace(",", ".") + "," +
-                    time.ToString().Replace(",", "."));
-            }
-        }
-
-        void SendFaceAnimationMessage(int sensorId, int user, EnumIndexableCollection<AnimationUnit, float> c, double time)
-        {
-            if (osc != null)
-            {
-                osc.Send(new OscElement(
-                    "/face_animation",
-                    sensorId, user,
-                    c[AnimationUnit.LipRaiser],
-                    c[AnimationUnit.LipStretcher],
-                    c[AnimationUnit.LipCornerDepressor],
-                    c[AnimationUnit.JawLower],
-                    c[AnimationUnit.BrowLower],
-                    c[AnimationUnit.BrowRaiser],
-                    time));
-            }
-            if (fileWriter != null)
-            {
-                fileWriter.WriteLine("FaceAnimation," +
-                    sensorId + "," + user + "," +
-                    c[AnimationUnit.LipRaiser].ToString().Replace(",", ".") + "," +
-                    c[AnimationUnit.LipStretcher].ToString().Replace(",", ".") + "," +
-                    c[AnimationUnit.LipCornerDepressor].ToString().Replace(",", ".") + "," +
-                    c[AnimationUnit.JawLower].ToString().Replace(",", ".") + "," +
-                    c[AnimationUnit.BrowLower].ToString().Replace(",", ".") + "," +
-                    c[AnimationUnit.BrowRaiser].ToString().Replace(",", ".") + "," +
-                    time.ToString().Replace(",", "."));
-            }
+            if (!capturing) { return; }
+            trackingInformationQueue.Add(new FaceAnimationTrackingInformation(sensorId, user, c, time));
         }
 
         private string GetErrorText(Exception ex)
