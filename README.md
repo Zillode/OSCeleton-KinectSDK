@@ -32,9 +32,10 @@ OSC Message format
 ### Joint message - message with the coordinates of each skeleton joint:
 The messages will have the following format:
 
-    Address pattern: "/Joint"
-    Type tag: "siffffd"
+    Address pattern: "/joint"
+    Type tag: "siiffffd"
     s: Joint name, check out the full list of joints below
+    i: The ID of the sensor
     i: The ID of the user
     f: X coordinate of joint in real world coordinates (centimers)
     f: Y coordinate of joint in real world coordinates (centimers)
@@ -47,8 +48,9 @@ Note: the Y coordinate is inverted compared to the default KinectSDK to be compa
 ### Face message - message with the coordinates of a face event:
 The messages will have the following format:
 
-    Address pattern: "/Face"
-    Type tag: "iffffd"
+    Address pattern: "/face"
+    Type tag: "iiffffd"
+    i: The ID of the sensor
     i: The ID of the user
     f: X coordinate of joint in real world coordinates (centimers)
     f: Y coordinate of joint in real world coordinates (centimers)
@@ -63,8 +65,9 @@ Further information about the face tracking properties can be found [here](http:
 ### FaceAnimation message - message with the coordinates of a face event:
 The messages will have the following format:
 
-    Address pattern: "/FaceAnimation"
-    Type tag: "iffffd"
+    Address pattern: "/face_animation"
+    Type tag: "iiffffd"
+    i: The ID of the sensor
     i: The ID of the user
     f: lip raiser [-1, 1]
     f: lip stretcher [-1, 1]
