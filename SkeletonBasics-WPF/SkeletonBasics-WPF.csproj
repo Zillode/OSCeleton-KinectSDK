@@ -162,12 +162,6 @@
     <Resource Include="Images\UncheckedNormal.png" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="Libs\Microsoft.Kinect.Toolkit.FaceTracking\Microsoft.Kinect.Toolkit.FaceTracking.csproj">
-      <Project>{1bcf9cee-df01-430e-b49d-41a9a88963eb}</Project>
-      <Name>Microsoft.Kinect.Toolkit.FaceTracking</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="midas-m-logo.ico" />
   </ItemGroup>
   <ItemGroup>
@@ -191,6 +185,12 @@
       <ProductName>Windows Installer 4.5</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="Libs\Microsoft.Kinect.Toolkit.FaceTracking\Microsoft.Kinect.Toolkit.FaceTracking.csproj">
+      <Project>{1bcf9cee-df01-430e-b49d-41a9a88963eb}</Project>
+      <Name>Microsoft.Kinect.Toolkit.FaceTracking</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
