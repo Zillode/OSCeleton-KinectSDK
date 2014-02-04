@@ -40,6 +40,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
         public override void Send(UdpWriter osc, StreamWriter fileWriter, int pointScale)
         {
+            if (skeleton == null) return;
             if (!fullBody)
             {
                 ProcessJointInformation(15, skeleton.Joints[JointType.HandRight], skeleton.BoneOrientations[JointType.HandRight], time, osc, fileWriter, pointScale);

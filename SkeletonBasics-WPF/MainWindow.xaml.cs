@@ -865,6 +865,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         void EnqueueSkeleton(int sensorId, int user, Skeleton s)
         {
             if (!capturing) { return; }
+            if (s == null) { return; }
             trackingInformationQueue.Add(new SkeletonTrackingInformation(sensorId, user, s, fullBody, stopwatch.ElapsedMilliseconds));
         }
           
@@ -885,6 +886,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         void EnqueueFaceAnimationMessage(int sensorId, int user, EnumIndexableCollection<AnimationUnit, float> c, double time)
         {
             if (!capturing) { return; }
+            if (c == null) { return; }
             trackingInformationQueue.Add(new FaceAnimationTrackingInformation(sensorId, user, c, time));
         }
 
