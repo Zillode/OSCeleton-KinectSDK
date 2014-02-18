@@ -872,7 +872,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         void SendTrackingInformation() {
             while (true) {
                 TrackingInformation i = trackingInformationQueue.Take();
-                if (capturing)
+                if (i != null && capturing)
                     i.Send(osc, fileWriter, pointScale);
             }
         }
