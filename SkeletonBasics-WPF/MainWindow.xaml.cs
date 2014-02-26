@@ -49,7 +49,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         private bool showSkeleton = true;
         private bool showRGB = false;
         private bool showDepth = false;
-        private bool speechCommands = true;
+        private bool speechCommands = false;
 
         // Outputs
         private int sensorId = 0;
