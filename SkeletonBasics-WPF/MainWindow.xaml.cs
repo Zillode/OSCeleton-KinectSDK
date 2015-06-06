@@ -49,7 +49,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         private bool showSkeleton = true;
         private bool showRGB = false;
         private bool showDepth = false;
-        private bool speechCommands = false;
 
         // Outputs
         private int sensorId = 0;
@@ -249,7 +248,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
 
             this.checkBoxSeatedMode.IsEnabled = false;
             this.checkBoxShowSkeleton.IsChecked = showSkeleton;
-            this.checkBoxSpeechCommands.IsChecked = speechCommands;
 
             foreach (var potentialSensor in KinectSensor.KinectSensors)
             {

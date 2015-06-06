@@ -1,4 +1,5 @@
 *.DS_Store
+*~
 /SkeletonBasics-WPF/*.pfx
 /SkeletonBasics-WPF/obj
 /SkeletonBasics-WPF/bin
@@ -9,3 +10,5 @@
 /SkeletonBasics-WPF/*.psess
 /SkeletonBasics-WPF/*.vsp
 /SkeletonBasics-WPF/publish
+
+/SkeletonBasics-WPF/Libs/Microsoft.Kinect.Toolkit.FaceTracking/*.suo

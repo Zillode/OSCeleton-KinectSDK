@@ -2,9 +2,9 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <PublishUrlHistory>publish\</PublishUrlHistory>
-    <InstallUrlHistory>http://www.midasgestures.net/private/osceleton-kinectsdk/</InstallUrlHistory>
-    <SupportUrlHistory>http://www.midasgestures.net</SupportUrlHistory>
-    <UpdateUrlHistory>http://www.midasgestures.net/private/osceleton-kinectsdk/</UpdateUrlHistory>
+    <InstallUrlHistory>http://osceleton.zillode.be/private/osceleton-kinectsdk/|http://midas.zillode.be/private/osceleton-kinectsdk/|http://www.midasgestures.net/private/osceleton-kinectsdk/</InstallUrlHistory>
+    <SupportUrlHistory>http://osceleton.zillode.be|http://www.midasgestures.net</SupportUrlHistory>
+    <UpdateUrlHistory>http://osceleton.zillode.be/private/osceleton-kinectsdk/|http://midas.zillode.be/private/osceleton-kinectsdk/|http://www.midasgestures.net/private/osceleton-kinectsdk/</UpdateUrlHistory>
     <BootstrapperUrlHistory />
     <ErrorReportUrlHistory />
     <FallbackCulture>en-US</FallbackCulture>

@@ -5,19 +5,25 @@ What is this?
 -------------
 
 As the title says, it's just a small program that takes kinect
-skeleton data from the KinectSDK (v1.7) framework and spits out the coordinates
+skeleton data from the KinectSDK (v1.8) framework and spits out the coordinates
 of the skeleton's joints via OSC messages. These can can then be used
 on your language / framework of choice.
 
-This version of OSCeleton is compatible with the OSCeleton-OpenNI version (Zillode/OSCeleton-OpenNI).
+The OSC protocol of this application is compatible with the [OSCeleton-OpenNI](https://github.com/Zillode/OSCeleton-OpenNI).
+A similar application for KinectSDK v2.0 is available [here](https://github.com/Zillode/OSCeleton-KinectSDK2).
 
-Note: this version is incompatible with Sensebloom/OSCeleton!
+Note: this protocol is partially incompatible with Sensebloom/OSCeleton!
 
 How do I use it?
 ----------------
 
+Download and install the [ClickOnce installer](http://osceleton.zillode.be/private/osceleton-kinectsdk/setup.exe)
+
+How do I build it?
+------------------
+
 ### Install Visual Studio 2012
-### Install [Microsoft Kinect SDK (version 1.7)](http://www.microsoft.com/en-us/kinectforwindows/develop/developer-downloads.aspx)
+### Install [Microsoft Kinect SDK (version 1.8)](https://www.microsoft.com/en-us/download/details.aspx?id=40278)
 ### Install [Microsoft Speech Platform SDK (version 11)](http://www.microsoft.com/en-us/download/details.aspx?id=27226)
 ### Compile and run the SkeletonBasics solution
 
@@ -114,6 +120,9 @@ discussion, come join the fun in a related [google group](http://groups.google.c
 
 ### OSCeleton-OpenNI ?
 To use the OpenNI & NITE framework in combination with OSC messages, download [OSCeleton-OpenNI](https://github.com/Zillode/OSCeleton-OpenNI)
+
+### OSCeleton-KinectSDK2 ?
+To use the Kinect SDK2 in combination with OSC messages, download [OSCeleton-KinectSDK2](https://github.com/Zillode/OSCeleton-KinectSDK2)
 
 Have fun!
 

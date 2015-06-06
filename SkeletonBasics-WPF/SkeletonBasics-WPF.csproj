@@ -26,14 +26,14 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
-    <InstallUrl>http://www.midasgestures.net/private/osceleton-kinectsdk/</InstallUrl>
-    <UpdateUrl>http://www.midasgestures.net/private/osceleton-kinectsdk/</UpdateUrl>
-    <SupportUrl>http://www.midasgestures.net</SupportUrl>
+    <InstallUrl>http://osceleton.zillode.be/private/osceleton-kinectsdk/</InstallUrl>
+    <UpdateUrl>http://osceleton.zillode.be/private/osceleton-kinectsdk/</UpdateUrl>
+    <SupportUrl>http://osceleton.zillode.be</SupportUrl>
     <TargetCulture>en</TargetCulture>
     <ProductName>OSCeleton-KinectSDK</ProductName>
-    <PublisherName>lhoste</PublisherName>
+    <PublisherName>Zillode</PublisherName>
     <OpenBrowserOnPublish>false</OpenBrowserOnPublish>
-    <ApplicationRevision>31</ApplicationRevision>
+    <ApplicationRevision>34</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -77,10 +77,13 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>E1326BB8EA2233567028613A2537CD2C33CFAC03</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>694989113E1FA49CAB8185DD43AD8344FA5188DD</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>zillode.pfx</ManifestKeyFile>
+    <ManifestKeyFile>publish\zillode.be.pfx</ManifestKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Kinect">
@@ -147,14 +150,13 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <None Include="Lode.pfx" />
     <None Include="Properties\app.manifest" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
-    <None Include="zillode.pfx" />
+    <None Include="publish\zillode.be.pfx" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\Kinect.ico" />
