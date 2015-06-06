@@ -940,6 +940,12 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                         string shortcutName = string.Empty;
                         shortcutName = string.Concat(Environment.GetFolderPath(Environment.SpecialFolder.Programs), "\\", company, "\\", description, ".appref-ms");
 
+                        if (!File.Exists(shortcutName))
+                            shortcutName = string.Concat(Environment.GetFolderPath(Environment.SpecialFolder.Programs), "\\", company, "\\", description, " - 1 .appref-ms");
+
+                        if (!File.Exists(shortcutName))
+                            shortcutName = string.Concat(Environment.GetFolderPath(Environment.SpecialFolder.Programs), "\\", company, "\\", description, " - 2 .appref-ms");
+
                         System.IO.File.Copy(shortcutName, desktopPath, true);
                     }
                     else
